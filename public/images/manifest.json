@@ -1,0 +1,132 @@
+{
+  "crew-installing-shutters.jpg": {
+    "width": 780,
+    "height": 794,
+    "alt": "Two installers in matching navy company shirts fitting white plantation shutters at a bright window",
+    "base": "crew-installing-shutters",
+    "sizes": [
+      640
+    ]
+  },
+  "custom-drapery-tieback.jpg": {
+    "width": 1024,
+    "height": 1536,
+    "alt": "Champagne patterned drapery panel gathered at a metal holdback over a sheer curtain",
+    "base": "custom-drapery-tieback",
+    "sizes": [
+      640,
+      1024
+    ]
+  },
+  "light-filtering-shades-pair.jpg": {
+    "width": 750,
+    "height": 500,
+    "alt": "Two narrow windows in a grey room fitted with woven light filtering shades",
+    "base": "light-filtering-shades-pair",
+    "sizes": [
+      640
+    ]
+  },
+  "motorized-patio-screen.jpg": {
+    "width": 1276,
+    "height": 1583,
+    "alt": "Large black motorized screen shade lowered across a covered patio under a barrel tile roof",
+    "base": "motorized-patio-screen",
+    "sizes": [
+      640,
+      1024
+    ]
+  },
+  "plantation-shutters-dining-room.jpg": {
+    "width": 600,
+    "height": 550,
+    "alt": "White plantation shutters on a tall window beside a glass dining table and pendant light",
+    "base": "plantation-shutters-dining-room",
+    "sizes": [
+      600
+    ]
+  },
+  "plantation-shutters-pool-view.jpg": {
+    "width": 750,
+    "height": 550,
+    "alt": "White plantation shutters beside an open doorway looking out to a screened pool and palms",
+    "base": "plantation-shutters-pool-view",
+    "sizes": [
+      640
+    ]
+  },
+  "prestige-blinds-team.jpg": {
+    "width": 1125,
+    "height": 997,
+    "alt": "Three men in matching company shirts standing in a living room with white shutters behind",
+    "base": "prestige-blinds-team",
+    "sizes": [
+      640,
+      1024
+    ]
+  },
+  "sheer-shades-dining-room.jpg": {
+    "width": 750,
+    "height": 550,
+    "alt": "Wide woven sheer shade covering a dining room window below a five arm chandelier",
+    "base": "sheer-shades-dining-room",
+    "sizes": [
+      640
+    ]
+  },
+  "sheer-shades-yacht-salon.jpg": {
+    "width": 750,
+    "height": 550,
+    "alt": "Horizontal sheer shade drawn across a long salon window above a cream leather bench",
+    "base": "sheer-shades-yacht-salon",
+    "sizes": [
+      640
+    ]
+  },
+  "solar-screen-shade-lanai.jpg": {
+    "width": 1290,
+    "height": 1539,
+    "alt": "Solar screen shade over a tall lanai window with blue outdoor seating and water beyond",
+    "base": "solar-screen-shade-lanai",
+    "sizes": [
+      640,
+      1024
+    ]
+  },
+  "wood-blinds-bedroom.jpg": {
+    "width": 750,
+    "height": 550,
+    "alt": "Two bedroom windows dressed with warm wood blinds on a plain painted wall",
+    "base": "wood-blinds-bedroom",
+    "sizes": [
+      640
+    ]
+  },
+  "wood-blinds-closeup.jpg": {
+    "width": 750,
+    "height": 550,
+    "alt": "Close view of honey toned wood blind slats with daylight across the grain",
+    "base": "wood-blinds-closeup",
+    "sizes": [
+      640
+    ]
+  },
+  "zebra-shades-dining-window.jpg": {
+    "width": 372,
+    "height": 550,
+    "alt": "Dark wood toned zebra shade with alternating sheer and solid bands on a dining window",
+    "base": "zebra-shades-dining-window",
+    "sizes": [
+      372
+    ]
+  },
+  "zebra-shades-sliding-door.jpg": {
+    "width": 372,
+    "height": 550,
+    "alt": "Cream zebra shades hung across a sliding glass door in a tiled room",
+    "base": "zebra-shades-sliding-door",
+    "sizes": [
+      372
+    ]
+  }
+}
