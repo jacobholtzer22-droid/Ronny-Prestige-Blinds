@@ -4,167 +4,167 @@
     {
       "source": "/plantation-shutters/boca-raton",
       "destination": "/areas/boca-raton",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/plantation-shutters-boca-raton",
       "destination": "/areas/boca-raton",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/plantation-shutters-parkland-florida",
       "destination": "/areas/parkland",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/blinds-parkland-florida",
       "destination": "/areas/parkland",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/electric-blinds-parkland",
       "destination": "/areas/parkland",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/parkland-window-treatments",
       "destination": "/areas/parkland",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/boca-raton-window-treatments",
       "destination": "/areas/boca-raton",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/davie-window-treatments",
       "destination": "/areas/davie",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/plantation-shutters",
       "destination": "/services/plantation-shutters",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/plantation-shutters-in-coral-springs",
       "destination": "/services/plantation-shutters",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/plantation-shutters-coral-springs-florida",
       "destination": "/services/plantation-shutters",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/custom-shutters",
       "destination": "/services/plantation-shutters",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/panel-track-shutters",
       "destination": "/services/plantation-shutters",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/motorized-blinds",
       "destination": "/services/motorized-shades",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/electric-shades-in-coral-springs",
       "destination": "/services/motorized-shades",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/electric-blinds-coral-springs",
       "destination": "/services/motorized-shades",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/zebra-shades",
       "destination": "/services/zebra-shades",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/shades",
       "destination": "/services/shades",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/custom-shades",
       "destination": "/services/shades",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/roller-shades",
       "destination": "/services/shades",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/blackout-roller-shades",
       "destination": "/services/shades",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/tenera-sheer-shades",
       "destination": "/services/shades",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/roman-shades",
       "destination": "/services/shades",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/outdoor-patio-shades",
       "destination": "/services/shades",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/blinds",
       "destination": "/services/blinds",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/custom-blinds",
       "destination": "/services/blinds",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/blinds-installation-coral-springs-fl",
       "destination": "/services/blinds",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/blinds-coral-springs-florida",
       "destination": "/services/blinds",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/drapery-services",
       "destination": "/services/drapery",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/custom-window-treatments",
       "destination": "/services",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/thank-you",
       "destination": "/contact",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/prestige-blinds-portfolio",
       "destination": "/",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/news",
       "destination": "/",
-      "permanent": true
+      "statusCode": 301
     }
   ]
 }
