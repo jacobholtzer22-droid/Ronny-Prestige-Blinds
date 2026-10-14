@@ -57,6 +57,5 @@ an answer is missing, the matching field is null and the block does not render.
 
 ## Before the site goes live (for Align and Acquire, not the client)
 
-- Set the real platform businessSlug in site.config.ts, replacing `replace-before-launch`.
 - Flip `prelaunch` to false in site.config.ts and redeploy.
 - Point `theme.logo` at the logo file once a transparent version arrives.

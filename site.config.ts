@@ -11,7 +11,7 @@ import type { SiteConfigInput } from './lib/config-schema'
  * the owner are in the client checklist at the repo root.
  */
 const siteConfig = {
-  businessSlug: 'replace-before-launch',
+  businessSlug: 'prestige-blinds-1791991763161',
 
   legalName: 'Prestige Blinds LLC',
   displayName: 'Prestige Blinds',

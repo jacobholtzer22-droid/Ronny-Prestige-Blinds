@@ -22,7 +22,7 @@ Anything not in this brief does not appear on the site. Facts marked [intake] ca
 
 ## Platform
 
-- businessSlug: `replace-before-launch` (placeholder; the human swaps in the real platform slug after the client signs up)
+- businessSlug: `prestige-blinds-1791991763161` (the live platform slug, wired into site.config.ts)
 - Domain: `https://www.prestigewoodblinds.com` (the client's existing domain, currently serving the WordPress site; the new site deploys first on a Vercel URL with prelaunch: true, and DNS moves at launch). www is primary; the apex redirects to www.
 
 ## Contact
@@ -148,7 +148,6 @@ Filled by section 2 of the build prompt. Hero, About image, service images, and 
 
 ## UNKNOWN (each becomes null or is left out; this is the list to chase)
 
-- Real platform businessSlug (placeholder in use)
 - Owner's name (reviews say Ronnie or Ronny)
 - Years in business: 20 [intake] versus "more than 10" and "over 15" [site]
 - Which products can actually be installed same day
