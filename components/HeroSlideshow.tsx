@@ -9,6 +9,8 @@ export interface HeroSlide {
   alt: string
   width: number
   height: number
+  /** object-position Y for this photograph. See FOCUS in components/Hero.tsx. */
+  focusY: string
 }
 
 /**
@@ -42,11 +44,19 @@ export interface HeroSlide {
  *     so a slide change remounts it and the sequence restarts.
  *   - Only opacity and transform ever change. The photographs are stacked in
  *     the same absolutely positioned box, so a crossfade moves nothing.
- *   - Autoplay stops while the pointer is over the hero and while the tab is
- *     hidden, and never starts at all under prefers-reduced-motion. In that
+ *   - Autoplay stops while the tab is hidden, and while the pointer is on the
+ *     controls, and never starts at all under prefers-reduced-motion. In that
  *     case the hero is slide 0, still, with working dots: pressing one cuts
  *     to that photograph rather than crossfading, because a visitor who has
  *     asked for less motion should get the picture, not the transition.
+ *
+ *     It deliberately does NOT pause on hovering the hero itself. This hero
+ *     is 82% of the screen at 1440x900, so a reader's cursor is resting on it
+ *     almost all the time, and pausing there meant the slideshow effectively
+ *     never advanced for anyone using a mouse. Pause-on-hover is right for a
+ *     small carousel you can point away from; it is wrong for a full-bleed
+ *     hero. The controls keep it, so aiming at an arrow does not turn into a
+ *     race against the next change.
  *
  * Controls: dots at the lower left, arrows on pointer devices, swipe on
  * touch, and left/right arrow keys once the region has focus.
@@ -120,8 +130,6 @@ export default function HeroSlideshow({ slides, children }: { slides: HeroSlide[
       aria-label={many ? 'Our work' : undefined}
       tabIndex={many ? 0 : undefined}
       onKeyDown={onKey}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
       onTouchStart={(e) => {
         touchX.current = e.touches[0]?.clientX ?? null
       }}
@@ -159,7 +167,7 @@ export default function HeroSlideshow({ slides, children }: { slides: HeroSlide[
             // eslint-disable-next-line @next/next/no-unknown-property
             fetchPriority={i === 0 ? 'high' : undefined}
             decoding="async"
-            style={{ objectPosition: '50% 42%' }}
+            style={{ objectPosition: `50% ${s.focusY}` }}
             className={`h-full w-full object-cover ${animate && i === active ? 'hero-pan' : ''}`}
           />
         </div>
@@ -188,7 +196,7 @@ export default function HeroSlideshow({ slides, children }: { slides: HeroSlide[
                   alt=""
                   aria-hidden="true"
                   decoding="async"
-                  style={{ objectPosition: '50% 42%' }}
+                  style={{ objectPosition: `50% ${slides[slotting]!.focusY}` }}
                   className="h-full w-full object-cover"
                 />
               </div>
@@ -204,7 +212,13 @@ export default function HeroSlideshow({ slides, children }: { slides: HeroSlide[
 
       {many && (
         <>
-          <div className="absolute inset-x-0 bottom-0 z-20 mx-auto flex max-w-page items-center justify-between gap-4 px-4 pb-6 sm:px-6">
+          <div
+            onMouseEnter={() => setPaused(true)}
+            onMouseLeave={() => setPaused(false)}
+            onFocusCapture={() => setPaused(true)}
+            onBlurCapture={() => setPaused(false)}
+            className="absolute inset-x-0 bottom-0 z-20 mx-auto flex max-w-page items-center justify-between gap-4 px-4 pb-6 sm:px-6"
+          >
             <div className="flex items-center gap-2.5" role="tablist" aria-label="Choose a photograph">
               {slides.map((s, i) => (
                 <button

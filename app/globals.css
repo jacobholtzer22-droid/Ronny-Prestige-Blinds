@@ -174,9 +174,10 @@
     animation: m-slot-in var(--m-hero-crossfade) var(--m-ease) both;
   }
 
-  /* Background: a slow zoom with a drift across the slide's whole life, and a
-     crossfade between slides. Linear, because a drift that decelerates reads
-     as a mistake. */
+  /* Background: a slow pull-back with a drift across the slide's whole life,
+     and a crossfade between slides. Linear, because a drift that decelerates
+     reads as a mistake. See MOTION.hero in lib/motion.ts for why it pulls
+     back instead of pushing in. */
   .hero-pan {
     animation: m-hero-pan var(--m-hero-slide) linear both;
   }
@@ -445,10 +446,10 @@
 }
 @keyframes m-hero-pan {
   from {
-    transform: scale(var(--m-hero-zoom-from)) translateX(0);
+    transform: scale(var(--m-hero-zoom-from)) translateX(var(--m-hero-drift-from));
   }
   to {
-    transform: scale(var(--m-hero-zoom-to)) translateX(var(--m-hero-drift));
+    transform: scale(var(--m-hero-zoom-to)) translateX(var(--m-hero-drift-to));
   }
 }
 @keyframes m-slot-in {

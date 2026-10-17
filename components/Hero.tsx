@@ -28,11 +28,42 @@ import Phone from './Phone'
  * scripts/contrast-check.ts rebuilds, so the gradient a visitor sees and the
  * one the contrast gate measures cannot drift apart.
  */
+/**
+ * Where to hold each hero photograph vertically, as an object-position Y.
+ *
+ * Every one of these three is portrait (0.84, 0.81 and 0.67) and the hero is
+ * a 1.94 band, so only about 43% of each photo's height is ever on screen.
+ * Which 43% is therefore the whole game: the default 50% put the lanai shot
+ * on a stretch of insect screen, and the patio shot on a flat dark panel,
+ * both of which read as "zoomed in" because nothing in the frame gives the
+ * product a scale. These values pick the band that still shows what the thing
+ * IS: the header bar and roofline on the patio screen, the view and the
+ * seating on the lanai, the knot on the drapery.
+ *
+ * Anything not listed falls back to the middle.
+ */
+const FOCUS: Record<string, string> = {
+  // Top frame, roof edge and the upper screen, rather than the dark middle.
+  'motorized-patio-screen.jpg': '12%',
+  // The view through the shade plus the top of the seating, for scale.
+  'solar-screen-shade-lanai.jpg': '52%',
+  // Centred on the tieback knot, which is the only focal point it has.
+  'custom-drapery-tieback.jpg': '44%',
+}
+const FOCUS_DEFAULT = '50%'
+
 export default function Hero() {
   const names = config.images.heroSlides.filter((n) => hasImage(n))
   const resolved: HeroSlide[] = names.map((n) => {
     const img = getImage(n)
-    return { src: img.src, srcSet: img.srcSet, alt: img.alt, width: img.width, height: img.height }
+    return {
+      src: img.src,
+      srcSet: img.srcSet,
+      alt: img.alt,
+      width: img.width,
+      height: img.height,
+      focusY: FOCUS[n] ?? FOCUS_DEFAULT,
+    }
   })
 
   const copy = (

@@ -81,11 +81,26 @@ export const MOTION = {
     slide: 7000,
     /** Crossfade between two slides. */
     crossfade: 1200,
-    /** Background zoom over the slide's life. */
-    zoomFrom: 1,
-    zoomTo: 1.08,
-    /** Background drift, as a percentage of its own width. */
-    driftTo: -2,
+    /**
+     * Background pan. It pulls BACK rather than pushing in: the slide opens
+     * slightly magnified and settles to its widest framing, so the frame a
+     * visitor spends most of the slide looking at is the least cropped one.
+     *
+     * The usual Ken Burns push-in does the opposite, and on this hero that
+     * was the wrong choice twice over: these three photographs are portrait
+     * (0.84, 0.81 and 0.67) in a 1.94 band, so only about 43% of each one is
+     * visible before any zoom at all, and a push-in spent the whole seven
+     * seconds making that worse. Kept small for the same reason.
+     *
+     * The drift stays well inside the overscale the zoom buys, so no edge can
+     * ever come into view: at scale 1.05 there is 2.5% of headroom per side
+     * and the drift asks for 1.2%.
+     */
+    zoomFrom: 1.05,
+    zoomTo: 1,
+    /** Drift start and end, as a percentage of the photo's own width. */
+    driftFrom: 1.2,
+    driftTo: 0,
     delay: {
       eyebrow: 100,
       headline: 300,
@@ -165,7 +180,8 @@ export const motionVars: Record<string, string> = {
   '--m-hero-d-cue': `${MOTION.hero.delay.cue}ms`,
   '--m-hero-zoom-from': String(MOTION.hero.zoomFrom),
   '--m-hero-zoom-to': String(MOTION.hero.zoomTo),
-  '--m-hero-drift': `${MOTION.hero.driftTo}%`,
+  '--m-hero-drift-from': `${MOTION.hero.driftFrom}%`,
+  '--m-hero-drift-to': `${MOTION.hero.driftTo}%`,
 }
 
 /** True when the visitor has asked for less motion. Safe before hydration. */
