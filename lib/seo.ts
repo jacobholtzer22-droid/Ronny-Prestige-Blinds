@@ -16,7 +16,15 @@ export function renderTitle(raw: string): string {
 
 export { DESCRIPTION_MAX, DESCRIPTION_MIN, TITLE_MAX, TITLE_MIN } from '@/scripts/verify-limits'
 
-export type PageKind = 'home' | 'service' | 'area' | 'services' | 'about' | 'contact' | 'privacy' | 'other'
+export type PageKind =
+  | 'home'
+  | 'service'
+  | 'area'
+  | 'services'
+  | 'about'
+  | 'contact'
+  | 'privacy'
+  | 'other'
 
 export interface BuildMetadataArgs {
   kind: PageKind
@@ -37,9 +45,13 @@ export function canonicalUrl(path: string): string {
 
 export function buildTitle(args: Pick<BuildMetadataArgs, 'kind' | 'service' | 'area' | 'title'>): string {
   const { displayName, primaryCity, primaryState, primaryService } = config
+  // Registry-driven pages author an explicit seoTitle in site.config.ts, because
+  // the old site's indexed titles are worth keeping where they still fit.
+  if (args.title) return args.title
   switch (args.kind) {
     case 'home':
-      return `${displayName} | ${primaryService.name} in ${primaryCity}, ${primaryState}`
+      // The old site's homepage title, rebuilt from config rather than typed.
+      return `${primaryCity} Window Treatments & Blinds | ${displayName}`
     case 'service':
       if (!args.service) throw new Error('buildTitle: kind "service" needs a service')
       return `${args.service.name} in ${primaryCity} | ${displayName}`
@@ -47,7 +59,7 @@ export function buildTitle(args: Pick<BuildMetadataArgs, 'kind' | 'service' | 'a
       if (!args.area) throw new Error('buildTitle: kind "area" needs an area')
       return `${primaryService.name} in ${args.area.name}, ${primaryState} | ${displayName}`
     case 'services':
-      return `All Services in ${primaryCity} | ${displayName}`
+      return `Custom Window Treatments in ${primaryCity} | ${displayName}`
     case 'about':
       return `About ${displayName} in ${primaryCity} | ${displayName}`
     case 'contact':
@@ -76,7 +88,7 @@ export function defaultDescription(args: Pick<BuildMetadataArgs, 'kind' | 'servi
     case 'area':
       return `${displayName} offers ${list} in ${args.area?.name ?? primaryCity}, ${primaryState}. Local crew, clear quotes, and reliable scheduling. Call ${phoneDisplay} to get started.`
     case 'services':
-      return `See every service ${displayName} offers in ${primaryCity}, ${primaryState}: ${list}. Each page explains what is included and answers common questions.`
+      return `Every window treatment ${displayName} installs in ${primaryCity}, ${primaryState}: ${list}. Each page explains what is included and answers the common questions.`
     case 'about':
       return `Meet ${displayName}, the local crew behind ${primaryService.name.toLowerCase()} in ${primaryCity}, ${primaryState}. Learn how we work and why neighbors keep calling us back.`
     case 'contact':

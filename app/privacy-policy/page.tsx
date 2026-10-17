@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import JsonLd from '@/components/JsonLd'
-import PageHeader from '@/components/PageHeader'
+import InnerHero from '@/components/InnerHero'
 import Phone from '@/components/Phone'
 import { config } from '@/lib/config'
 import { contentExists, loadContent, readFrontmatter } from '@/lib/content'
@@ -47,7 +47,7 @@ export default async function PrivacyPolicyPage() {
   return (
     <>
       <JsonLd data={breadcrumbList(CRUMBS)} />
-      <PageHeader title="Privacy Policy" crumbs={CRUMBS} />
+      <InnerHero eyebrow="Legal" title="Privacy Policy" crumbs={CRUMBS} secondaryHref="/contact" secondaryLabel="Contact Us" />
       <article className="prose-custom mx-auto max-w-3xl px-4 pt-6 text-base leading-relaxed text-ink sm:px-6">
         {extra?.content}
 

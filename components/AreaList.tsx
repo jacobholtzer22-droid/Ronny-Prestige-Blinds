@@ -11,7 +11,7 @@ export default function AreaList({ heading = 'Areas We Serve', exclude }: { head
         {areas.map((a) => (
           <li key={a.slug}>
             <Link
-              href={`/areas/${a.slug}`}
+              href={a.path}
               className="inline-block rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium text-ink hover:border-primary hover:text-primary"
             >
               {a.name}, {config.primaryState}

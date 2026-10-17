@@ -23,7 +23,7 @@ export default function ServiceGrid({ heading = 'Our Services', exclude }: Props
       <ol className="mt-10 border-t-2 border-primary-dark">
         {services.map((s, i) => (
           <li key={s.slug} className="border-b border-line">
-            <Link href={`/services/${s.slug}`} className="group grid gap-3 py-7 md:grid-cols-12 md:items-baseline md:gap-8">
+            <Link href={s.path} className="group grid gap-3 py-7 md:grid-cols-12 md:items-baseline md:gap-8">
               <span className="font-heading text-sm font-semibold tabular-nums text-accent md:col-span-1">
                 {String(i + 1).padStart(2, '0')}
               </span>

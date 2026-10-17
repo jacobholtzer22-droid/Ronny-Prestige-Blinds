@@ -5,14 +5,16 @@ an answer is missing, the matching field is null and the block does not render.
 
 ## Photos
 
-- Send original job photos, straight off the phone or camera, at full resolution. Everything on the site right now was pulled off the current website, where it had already been compressed by WordPress.
+- Send original job photos and videos, straight off the phone or camera, at full resolution. Everything on the site right now was pulled off the current website, where it had already been compressed by WordPress. This is the single biggest visual upgrade available: the hero photograph is currently limited by the resolution of the old site's copies.
+- Add Jacob as an owner on the prestigewoodblinds.com Google Search Console property, so the URL changes can be monitored through the domain cutover.
 - Do you have photos of a drapery job and a blinds job in a finished room? Those two are the thinnest.
 - Do you have photos of a commercial or hospitality job we are allowed to show?
 
 ## Brand and identity
 
 - Do you have the logo as a transparent PNG or an SVG? The versions on the current site are small and have a white background baked in.
-- How do you want your name shown on the site, if at all? Right now the site never names you.
+- How do you want your name shown on the site, if at all? Right now the site never names you, though your reviews do.
+- Confirm the hero and the Our Work page can show your Instagram posts. They are public right now, so the embeds work; if the account is ever set to private the embeds will stop rendering and show a plain link instead.
 
 ## The business
 
@@ -53,7 +55,8 @@ an answer is missing, the matching field is null and the block does not render.
 
 ## Website structure
 
-- The old site had a separate page for roller, Roman, sheer, and outdoor patio shades. The new site folds all four into one Shades page. Do you want them split back out?
+- The old site had a separate page for roller, Roman, sheer, and outdoor patio shades. Those now have their own pages again, at the same URLs as before, with a Shades page above them as the hub.
+- Are there any cities in the new service area list you do not actually want to cover? The site now has a page for fourteen of them.
 
 ## Before the site goes live (for Align and Acquire, not the client)
 

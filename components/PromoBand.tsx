@@ -18,8 +18,8 @@ export default function PromoBand() {
           {offer.finePrint && <p className="mt-2 text-sm text-muted">{offer.finePrint}</p>}
         </div>
         <Link
-          href="/contact"
-          className="rounded-site bg-accent px-6 py-3.5 text-base font-semibold text-on-accent hover:bg-accent-dark"
+          href="/contact#contact-form"
+          className="rounded-full bg-accent px-6 py-3.5 text-base font-semibold text-on-accent hover:bg-accent-dark"
         >
           Claim This Offer
         </Link>

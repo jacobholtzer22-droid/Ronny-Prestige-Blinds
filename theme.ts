@@ -69,7 +69,7 @@ const theme: Theme = {
     onPrimary: '#F7F7F5',
     onAccent: '#FDFBF9',
   },
-  heroVariant: 'split',
+  heroVariant: 'full-bleed',
   radius: 0.375,
   shadow: '0 1px 2px rgb(27 42 87 / 0.08)',
 }

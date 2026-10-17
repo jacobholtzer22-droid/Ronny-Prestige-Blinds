@@ -28,3 +28,75 @@
     display: none;
   }
 }
+
+/* Hero load sequence. The current site's slider staggers its text layers in;
+   this is the same effect in CSS, with the delays in one place. Only opacity
+   and transform animate. Under prefers-reduced-motion nothing moves. */
+@layer components {
+  /* Scroll reveal. See components/Reveal.tsx: the hidden state is a class so
+     the <noscript> rule below can switch it off wholesale. */
+  .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+      opacity 500ms ease-out,
+      transform 500ms ease-out;
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  .hero-item {
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+      opacity 500ms ease-out,
+      transform 500ms ease-out;
+  }
+  .hero-ready .hero-item {
+    opacity: 1;
+    transform: none;
+  }
+  .hero-ready .hero-item:nth-child(2) {
+    transition-delay: 120ms;
+  }
+  .hero-ready .hero-item:nth-child(3) {
+    transition-delay: 240ms;
+  }
+  .hero-ready .hero-item:nth-child(4) {
+    transition-delay: 360ms;
+  }
+  /* Slow zoom on the active hero slide, the way the old slider drifts. */
+  .hero-slide-active {
+    animation: hero-zoom 7000ms ease-out forwards;
+  }
+}
+
+@keyframes hero-zoom {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .hero-item {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .hero-slide-active {
+    animation: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}

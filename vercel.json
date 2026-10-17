@@ -2,167 +2,142 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "redirects": [
     {
-      "source": "/plantation-shutters/boca-raton",
-      "destination": "/areas/boca-raton",
+      "source": "/services",
+      "destination": "/custom-window-treatments",
       "statusCode": 301
     },
     {
-      "source": "/plantation-shutters-boca-raton",
-      "destination": "/areas/boca-raton",
+      "source": "/services/plantation-shutters",
+      "destination": "/plantation-shutters",
       "statusCode": 301
     },
     {
-      "source": "/plantation-shutters-parkland-florida",
-      "destination": "/areas/parkland",
+      "source": "/services/motorized-shades",
+      "destination": "/motorized-blinds",
       "statusCode": 301
     },
     {
-      "source": "/blinds-parkland-florida",
-      "destination": "/areas/parkland",
+      "source": "/services/zebra-shades",
+      "destination": "/zebra-shades",
       "statusCode": 301
     },
     {
-      "source": "/electric-blinds-parkland",
-      "destination": "/areas/parkland",
+      "source": "/services/shades",
+      "destination": "/shades",
       "statusCode": 301
     },
     {
-      "source": "/parkland-window-treatments",
-      "destination": "/areas/parkland",
+      "source": "/services/blinds",
+      "destination": "/blinds",
       "statusCode": 301
     },
     {
-      "source": "/boca-raton-window-treatments",
-      "destination": "/areas/boca-raton",
+      "source": "/services/drapery",
+      "destination": "/drapery-services",
       "statusCode": 301
     },
     {
-      "source": "/davie-window-treatments",
-      "destination": "/areas/davie",
+      "source": "/areas/parkland",
+      "destination": "/parkland-window-treatments",
       "statusCode": 301
     },
     {
-      "source": "/plantation-shutters",
-      "destination": "/services/plantation-shutters",
+      "source": "/areas/boca-raton",
+      "destination": "/boca-raton-window-treatments",
       "statusCode": 301
     },
     {
-      "source": "/plantation-shutters-in-coral-springs",
-      "destination": "/services/plantation-shutters",
+      "source": "/areas/davie",
+      "destination": "/davie-window-treatments",
       "statusCode": 301
     },
     {
-      "source": "/plantation-shutters-coral-springs-florida",
-      "destination": "/services/plantation-shutters",
+      "source": "/areas/fort-lauderdale",
+      "destination": "/fort-lauderdale-window-treatments",
       "statusCode": 301
     },
     {
-      "source": "/custom-shutters",
-      "destination": "/services/plantation-shutters",
+      "source": "/areas/pompano-beach",
+      "destination": "/pompano-beach-window-treatments",
       "statusCode": 301
     },
     {
-      "source": "/panel-track-shutters",
-      "destination": "/services/plantation-shutters",
+      "source": "/areas/weston",
+      "destination": "/weston-window-treatments",
       "statusCode": 301
     },
     {
-      "source": "/motorized-blinds",
-      "destination": "/services/motorized-shades",
+      "source": "/areas/plantation",
+      "destination": "/plantation-window-treatments",
       "statusCode": 301
     },
     {
-      "source": "/electric-shades-in-coral-springs",
-      "destination": "/services/motorized-shades",
-      "statusCode": 301
-    },
-    {
-      "source": "/electric-blinds-coral-springs",
-      "destination": "/services/motorized-shades",
-      "statusCode": 301
-    },
-    {
-      "source": "/zebra-shades",
-      "destination": "/services/zebra-shades",
-      "statusCode": 301
-    },
-    {
-      "source": "/shades",
-      "destination": "/services/shades",
-      "statusCode": 301
-    },
-    {
-      "source": "/custom-shades",
-      "destination": "/services/shades",
-      "statusCode": 301
-    },
-    {
-      "source": "/roller-shades",
-      "destination": "/services/shades",
-      "statusCode": 301
-    },
-    {
-      "source": "/blackout-roller-shades",
-      "destination": "/services/shades",
-      "statusCode": 301
-    },
-    {
-      "source": "/tenera-sheer-shades",
-      "destination": "/services/shades",
-      "statusCode": 301
-    },
-    {
-      "source": "/roman-shades",
-      "destination": "/services/shades",
-      "statusCode": 301
-    },
-    {
-      "source": "/outdoor-patio-shades",
-      "destination": "/services/shades",
-      "statusCode": 301
-    },
-    {
-      "source": "/blinds",
-      "destination": "/services/blinds",
+      "source": "/areas/delray-beach",
+      "destination": "/delray-beach-window-treatments",
       "statusCode": 301
     },
     {
       "source": "/custom-blinds",
-      "destination": "/services/blinds",
+      "destination": "/blinds",
+      "statusCode": 301
+    },
+    {
+      "source": "/custom-shutters",
+      "destination": "/plantation-shutters",
+      "statusCode": 301
+    },
+    {
+      "source": "/custom-shades",
+      "destination": "/shades",
       "statusCode": 301
     },
     {
       "source": "/blinds-installation-coral-springs-fl",
-      "destination": "/services/blinds",
+      "destination": "/blinds-coral-springs-florida",
       "statusCode": 301
     },
     {
-      "source": "/blinds-coral-springs-florida",
-      "destination": "/services/blinds",
+      "source": "/electric-shades-in-coral-springs",
+      "destination": "/electric-blinds-coral-springs",
       "statusCode": 301
     },
     {
-      "source": "/drapery-services",
-      "destination": "/services/drapery",
+      "source": "/plantation-shutters-in-coral-springs",
+      "destination": "/plantation-shutters-coral-springs-florida",
       "statusCode": 301
     },
     {
-      "source": "/custom-window-treatments",
-      "destination": "/services",
+      "source": "/plantation-shutters/boca-raton",
+      "destination": "/plantation-shutters-boca-raton",
       "statusCode": 301
     },
     {
-      "source": "/thank-you",
-      "destination": "/contact",
-      "statusCode": 301
-    },
-    {
-      "source": "/prestige-blinds-portfolio",
+      "source": "/wp-content/:path*",
       "destination": "/",
       "statusCode": 301
     },
     {
-      "source": "/news",
+      "source": "/wp-admin/:path*",
+      "destination": "/",
+      "statusCode": 301
+    },
+    {
+      "source": "/wp-login.php",
+      "destination": "/",
+      "statusCode": 301
+    },
+    {
+      "source": "/feed",
+      "destination": "/",
+      "statusCode": 301
+    },
+    {
+      "source": "/comments/feed",
+      "destination": "/",
+      "statusCode": 301
+    },
+    {
+      "source": "/xmlrpc.php",
       "destination": "/",
       "statusCode": 301
     }

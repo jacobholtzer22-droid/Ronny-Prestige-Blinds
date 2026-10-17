@@ -4,14 +4,18 @@ import Phone from './Phone'
 
 const PROFILE_LABELS: Record<string, string> = {
   gbp: 'Google',
+  yelp: 'Yelp',
+  angi: 'Angi',
   facebook: 'Facebook',
   instagram: 'Instagram',
-  yelp: 'Yelp',
 }
+const PROFILE_ORDER = ['gbp', 'yelp', 'angi', 'facebook', 'instagram']
 
 export default function Footer() {
   const year = new Date().getFullYear()
-  const profiles = Object.entries(config.profiles).filter((e): e is [string, string] => typeof e[1] === 'string')
+  const profiles = PROFILE_ORDER.map((k) => [k, (config.profiles as Record<string, string | null | undefined>)[k]] as const).filter(
+    (e): e is readonly [string, string] => typeof e[1] === 'string',
+  )
 
   return (
     <footer className="mt-16 border-t border-line bg-primary-dark text-on-primary">
@@ -43,7 +47,7 @@ export default function Footer() {
           <ul className="mt-3 space-y-2 text-sm">
             {config.services.map((s) => (
               <li key={s.slug}>
-                <Link href={`/services/${s.slug}`} className="hover:underline">
+                <Link href={s.path} className="hover:underline">
                   {s.name}
                 </Link>
               </li>
@@ -56,7 +60,7 @@ export default function Footer() {
           <ul className="mt-3 space-y-2 text-sm">
             {config.serviceAreas.map((a) => (
               <li key={a.slug}>
-                <Link href={`/areas/${a.slug}`} className="hover:underline">
+                <Link href={a.path} className="hover:underline">
                   {a.name}, {config.primaryState}
                 </Link>
               </li>
@@ -81,15 +85,30 @@ export default function Footer() {
             </>
           )}
           {profiles.length > 0 && (
-            <ul className="mt-6 flex flex-wrap gap-4 text-sm">
-              {profiles.map(([key, url]) => (
-                <li key={key}>
-                  <a href={url} rel="noopener" target="_blank" className="underline-offset-2 hover:underline">
-                    {PROFILE_LABELS[key] ?? key}
+            <div className="mt-6">
+              <p className="text-sm font-semibold uppercase tracking-wide opacity-70">Find us on</p>
+              <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm">
+                {profiles.map(([key, url]) => (
+                  <li key={key}>
+                    <a href={url} rel="noopener" target="_blank" className="underline-offset-2 hover:underline">
+                      {PROFILE_LABELS[key] ?? key}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+              {config.reviewLink && (
+                <p className="mt-3 text-sm">
+                  <a
+                    href={config.reviewLink}
+                    rel="noopener nofollow"
+                    target="_blank"
+                    className="underline underline-offset-2"
+                  >
+                    Leave us a Google review
                   </a>
-                </li>
-              ))}
-            </ul>
+                </p>
+              )}
+            </div>
           )}
         </div>
       </div>

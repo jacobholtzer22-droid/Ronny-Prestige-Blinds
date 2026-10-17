@@ -1,5 +1,5 @@
 import { config } from './config'
-import type { Faq, Service, ServiceArea, SiteConfig } from './config-schema'
+import type { Faq, Product, Service, ServiceArea, SiteConfig } from './config-schema'
 import { getImage, hasImage } from './images'
 
 /**
@@ -112,7 +112,7 @@ export function localBusiness(areas: readonly ServiceArea[] = config.serviceArea
       name: `${c.displayName} services`,
       itemListElement: c.services.map((s) => ({
         '@type': 'Offer',
-        itemOffered: { '@type': 'Service', name: s.name, url: absolute(`/services/${s.slug}`) },
+        itemOffered: { '@type': 'Service', name: s.name, url: absolute(s.path) },
       })),
     },
   }
@@ -147,17 +147,17 @@ export function website(): Json {
   }
 }
 
-export function service(s: Service): Json {
+export function service(s: Service | Product): Json {
   const c = config
   const img = s.image && hasImage(s.image) ? absolute(getImage(s.image).src) : null
   return {
     '@context': 'https://schema.org',
     '@type': 'Service',
-    '@id': `${absolute(`/services/${s.slug}`)}#service`,
+    '@id': `${absolute(s.path)}#service`,
     name: s.name,
     serviceType: s.name,
     description: s.shortDescription,
-    url: absolute(`/services/${s.slug}`),
+    url: absolute(s.path),
     provider: { '@id': BUSINESS_ID() },
     areaServed: areaServed(c.serviceAreas),
     ...when(img, (image) => ({ image })),

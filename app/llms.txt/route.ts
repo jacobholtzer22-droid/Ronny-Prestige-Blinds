@@ -1,4 +1,5 @@
 import { config, formatTime } from '@/lib/config'
+import { routeEntries } from '@/lib/routes'
 
 export const dynamic = 'force-static'
 
@@ -21,10 +22,14 @@ export function GET() {
     `- Contact page: ${url('/contact')}`,
     '',
     '## Services',
-    ...c.services.map((s) => `- [${s.name}](${url(`/services/${s.slug}`)}): ${s.shortDescription}`),
+    ...c.services.map((s) => `- [${s.name}](${url(s.path)}): ${s.shortDescription}`),
+    '',
+    '## Products',
+    ...c.products.map((p) => `- [${p.name}](${url(p.path)}): ${p.shortDescription}`),
     '',
     '## Service areas',
-    ...c.serviceAreas.map((a) => `- [${a.name}, ${c.primaryState}](${url(`/areas/${a.slug}`)})`),
+    ...c.serviceAreas.map((a) => `- [${a.name}, ${c.primaryState}](${url(a.path)})`),
+    ...c.counties.map((x) => `- [${x.name}](${url(x.path)})`),
   ]
   if (c.hours) {
     lines.push('', '## Hours', ...c.hours.map((h) => `- ${h.day}: ${formatTime(h.open)} to ${formatTime(h.close)}`))
@@ -34,7 +39,8 @@ export function GET() {
   if (c.insured === true) facts.push('- Insured: yes')
   if (c.licenseNumber) facts.push(`- License: ${c.licenseNumber}`)
   if (facts.length) lines.push('', '## Credentials', ...facts)
-  lines.push('', '## Pages', `- [About](${url('/about')})`, `- [Privacy Policy](${url('/privacy-policy')})`, `- [Sitemap](${url('/sitemap.xml')})`)
+  lines.push('', '## Every page', ...routeEntries().map((r) => `- ${url(r.path)}`))
+  lines.push('', `- [Sitemap](${url('/sitemap.xml')})`)
 
   return new Response(lines.join('\n') + '\n', {
     headers: { 'Content-Type': 'text/plain; charset=utf-8' },

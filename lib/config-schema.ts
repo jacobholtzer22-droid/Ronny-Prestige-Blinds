@@ -46,6 +46,19 @@ const TIME_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/
 
 const slug = z.string().regex(SLUG_REGEX, 'must be kebab-case: lowercase letters, digits, single hyphens')
 
+/**
+ * A page's real URL path. The old WordPress site's URLs are the canonical ones
+ * now, so a page's path is authored here rather than derived from its slug:
+ * `/plantation-shutters`, not `/services/plantation-shutters`. lib/routes.ts
+ * reads these and is the single registry the sitemap, nav, llms.txt and verify
+ * checks 16 and 17 all resolve from.
+ */
+export const PATH_REGEX = /^\/[a-z0-9]+(?:[-/][a-z0-9]+)*$/
+const pagePath = z.string().regex(PATH_REGEX, 'must be an absolute kebab-case path, e.g. /plantation-shutters')
+
+/** Explicit <title>. 30 to 60 characters, because verify check 13 measures the rendered title. */
+const seoTitle = z.string().min(30).max(60)
+
 const faq = z.object({
   q: z.string().min(8),
   a: z.string().min(20),
@@ -94,8 +107,14 @@ export const siteConfigSchema = z
       .array(
         z.object({
           slug,
+          /** The old site's pattern: /<city>-window-treatments */
+          path: pagePath,
+          seoTitle,
           name: z.string().min(2),
           county: z.string().nullable(),
+          /** Which entry in `counties` this city belongs to. */
+          countySlug: slug,
+          faqs: z.array(faq).min(3).max(6),
         }),
       )
       .min(1),
@@ -104,6 +123,9 @@ export const siteConfigSchema = z
       .array(
         z.object({
           slug,
+          /** The old site's URL for this service. Serving it keeps indexed links alive. */
+          path: pagePath,
+          seoTitle,
           name: z.string().min(2),
           shortDescription: z.string().min(40).max(200),
           priceFrom: z.number().nullable(),
@@ -114,6 +136,71 @@ export const siteConfigSchema = z
         }),
       )
       .min(1),
+
+    /**
+     * Individual products that sit under a service, each at its own old URL
+     * (/roller-shades, /panel-track-shutters, ...). Same shape as a service
+     * plus `parent`, so one page template renders both.
+     */
+    products: z
+      .array(
+        z.object({
+          slug,
+          path: pagePath,
+          seoTitle,
+          name: z.string().min(2),
+          /** Slug of the service in `services` this product belongs under. */
+          parent: slug,
+          shortDescription: z.string().min(40).max(200),
+          priceFrom: z.number().nullable(),
+          priceNote: z.string().nullable(),
+          image: z.string().nullable(),
+          faqs: z.array(faq).min(3).max(6),
+        }),
+      )
+      .default([]),
+
+    /**
+     * County hub pages. `towns` names the entries in `coverage` for that
+     * county; a town that also has a serviceArea entry is linked.
+     */
+    counties: z
+      .array(
+        z.object({
+          slug,
+          path: pagePath,
+          seoTitle,
+          name: z.string().min(4),
+        }),
+      )
+      .default([]),
+
+    /**
+     * Service-plus-city pages the old site ranked for, each at its exact old
+     * URL. These are NOT the service page with a city swapped in: each needs
+     * its own body. `term` is the primary search term the old page used.
+     */
+    localPages: z
+      .array(
+        z.object({
+          slug,
+          path: pagePath,
+          seoTitle,
+          /** Slug in `services` this page funnels to. */
+          service: slug,
+          /**
+           * Slug in `serviceAreas` for the city, or null when the page is for
+           * the primary city, which has no separate area page of its own.
+           */
+          area: slug.nullable(),
+          city: z.string().min(2),
+          /** The old page's primary term, kept in the H1. */
+          term: z.string().min(4),
+          h1: z.string().min(10),
+          faqs: z.array(faq).min(3).max(6),
+        }),
+      )
+      .default([]),
 
     /** null means hours are unknown. openingHoursSpecification is omitted entirely. Never guess hours. */
     hours: z
@@ -153,8 +240,12 @@ export const siteConfigSchema = z
         facebook: z.string().url().nullable(),
         instagram: z.string().url().nullable(),
         yelp: z.string().url().nullable(),
+        angi: z.string().url().nullable(),
       })
       .partial(),
+
+    /** "Leave us a review" destination. null hides the link. */
+    reviewLink: z.string().url().nullable().default(null),
 
     /** Homepage FAQs. FAQPage schema on the homepage renders only when non-empty. */
     faqs: z.array(faq).default([]),
@@ -176,6 +267,13 @@ export const siteConfigSchema = z
        * Requires `hero` to be set; the refine below enforces it.
        */
       heroVideo: z.object({ desktop: z.string().min(2), mobile: z.string().min(2) }).nullable().default(null),
+      /**
+       * Full-bleed hero slideshow. Two or more entries turn the hero into a
+       * crossfading slideshow; fewer and it stays a single static image.
+       * The FIRST entry must equal `hero`, because that is the frame rendered
+       * server-side, the LCP element, and the one verify check 19 measures.
+       */
+      heroSlides: z.array(z.string().min(2)).default([]),
     }),
 
     /**
@@ -328,6 +426,13 @@ export const siteConfigSchema = z
   .superRefine((cfg, ctx) => {
     // Footage with no poster would leave the hero blank until the clip
     // decodes, and would leave check 19 with nothing to measure.
+    if (cfg.images.heroSlides.length > 0 && cfg.images.heroSlides[0] !== cfg.images.hero) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['images', 'heroSlides'],
+        message: 'the first slide must be images.hero: it is the server-rendered frame and the one check 19 measures',
+      })
+    }
     if (cfg.images.heroVideo && !cfg.images.hero) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -341,6 +446,9 @@ export type SiteConfigInput = z.input<typeof siteConfigSchema>
 export type SiteConfigParsed = z.output<typeof siteConfigSchema>
 
 export type Service = SiteConfigParsed['services'][number]
+export type Product = SiteConfigParsed['products'][number]
+export type County = SiteConfigParsed['counties'][number]
+export type LocalPage = SiteConfigParsed['localPages'][number]
 export type ServiceArea = SiteConfigParsed['serviceAreas'][number]
 export type Review = SiteConfigParsed['reviews'][number]
 export type Faq = SiteConfigParsed['faqs'][number]

@@ -3,7 +3,8 @@ import ContactDetails from '@/components/ContactDetails'
 import ContactForm from '@/components/ContactForm'
 import JsonLd from '@/components/JsonLd'
 import CoverageList from '@/components/CoverageList'
-import PageHeader from '@/components/PageHeader'
+import Em from '@/components/Em'
+import InnerHero from '@/components/InnerHero'
 import PromoBand from '@/components/PromoBand'
 import { config } from '@/lib/config'
 import { loadContent, readFrontmatter } from '@/lib/content'
@@ -26,12 +27,25 @@ export default async function ContactPage() {
   return (
     <>
       <JsonLd data={breadcrumbList(CRUMBS)} />
-      <PageHeader title={`Contact ${config.displayName}`} crumbs={CRUMBS} />
+      <InnerHero
+        eyebrow="Contact"
+        title={
+          <>
+            Book a free <Em>in-home</Em> consultation
+          </>
+        }
+        intro={`We come to you anywhere within fifty miles of ${config.primaryCity}, measure, and bring samples.`}
+        crumbs={CRUMBS}
+        secondaryHref="/custom-window-treatments"
+        secondaryLabel="See What We Install"
+      />
       <PromoBand />
       <div className="mx-auto grid max-w-page gap-10 px-4 pt-10 sm:px-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <article className="mb-8">{content}</article>
-          <ContactForm />
+          <div id="contact-form" className="scroll-mt-28">
+            <ContactForm />
+          </div>
         </div>
         <aside>
           <ContactDetails />

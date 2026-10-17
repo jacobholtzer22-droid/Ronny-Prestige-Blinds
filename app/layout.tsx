@@ -40,6 +40,14 @@ const cssVars = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${headingFont.variable} ${bodyFont.variable}`} style={cssVars}>
+      <head>
+        {/* Without JavaScript the IntersectionObserver in components/Reveal.tsx
+            never runs, so every .reveal would stay at opacity 0. The markup is
+            all present; this just makes it visible. */}
+        <noscript>
+          <style>{'.reveal{opacity:1 !important;transform:none !important}.hero-item{opacity:1 !important;transform:none !important}'}</style>
+        </noscript>
+      </head>
       <body className="flex min-h-screen flex-col pb-16 md:pb-0">
         <a
           href="#main"
