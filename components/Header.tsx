@@ -94,7 +94,7 @@ export default function Header() {
               aria-label="Open menu"
               aria-expanded={drawer}
               onClick={() => setDrawer(true)}
-              className="flex h-11 w-11 items-center justify-center rounded-site border border-line text-primary-dark md:hidden"
+              className="flex h-11 w-11 items-center justify-center rounded-site border border-line text-primary-dark lg:hidden"
             >
               <span aria-hidden="true" className="space-y-[5px]">
                 <span className="block h-[2px] w-5 bg-current" />
@@ -108,7 +108,7 @@ export default function Header() {
 
       {/* nav row */}
       <div
-        className={`sticky top-0 z-40 hidden border-b border-line bg-surface/95 backdrop-blur transition-shadow md:block ${
+        className={`sticky top-0 z-40 hidden border-b border-line bg-surface/95 backdrop-blur transition-shadow lg:block ${
           scrolled ? 'shadow-site' : ''
         }`}
       >
@@ -163,7 +163,7 @@ export default function Header() {
 
       {/* mobile drawer */}
       {drawer && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-surface md:hidden">
+        <div className="fixed inset-0 z-50 flex flex-col bg-surface lg:hidden">
           <div className="flex items-center justify-between border-b border-line px-4 py-3">
             <Link href="/" aria-label={`${config.displayName} home`}>
               {brand}

@@ -20,25 +20,75 @@ const IG = 'https://www.instagram.com'
 
 export const INSTAGRAM_POSTS: InstagramPost[] = [
   { url: `${IG}/p/C7P3WOWJRPC/`, label: 'Plantation shutters on Instagram', topics: ['plantation-shutters'] },
-  { url: `${IG}/reel/DAUK7YxpfB0/`, label: 'Motorized zebra shades on Instagram', topics: ['zebra-shades', 'motorized-blinds'] },
+  {
+    url: `${IG}/reel/DAUK7YxpfB0/`,
+    label: 'Motorized zebra shades on Instagram',
+    topics: ['zebra-shades', 'motorized-blinds'],
+  },
   { url: `${IG}/reel/C-dsW1SJJJI/`, label: 'Roller shades on Instagram', topics: ['roller-shades', 'shades'] },
   { url: `${IG}/reel/C74fXbQJpQK/`, label: 'Custom drapery on Instagram', topics: ['drapery-services'] },
-  { url: `${IG}/reel/DArHDXfppOm/`, label: 'Patio screen shades on Instagram', topics: ['outdoor-patio-shades', 'shades'] },
+  {
+    url: `${IG}/reel/DArHDXfppOm/`,
+    label: 'Patio screen shades on Instagram',
+    topics: ['outdoor-patio-shades', 'shades'],
+  },
   { url: `${IG}/p/C7P4OGBpVy0/`, label: 'French door shutters on Instagram', topics: ['plantation-shutters'] },
-  { url: `${IG}/reel/DDIWiAxv8ux/`, label: 'Recent installation on Instagram', topics: [] },
-  { url: `${IG}/reel/DBwfC3BJLj4/`, label: 'Recent installation on Instagram', topics: [] },
-  { url: `${IG}/p/DArIpGDpfF3/`, label: 'Recent installation on Instagram', topics: [] },
-  { url: `${IG}/reel/DAq9SBopYKf/`, label: 'Recent installation on Instagram', topics: [] },
-  { url: `${IG}/reel/DAV1K1mpZSV/`, label: 'Recent installation on Instagram', topics: [] },
-  { url: `${IG}/p/C-5pyHTpvrw/`, label: 'Recent installation on Instagram', topics: [] },
-  { url: `${IG}/reel/C9FWwl-RMOI/`, label: 'Recent installation on Instagram', topics: [] },
-  { url: `${IG}/reel/C8fR9AcJban/`, label: 'Recent installation on Instagram', topics: [] },
-  { url: `${IG}/reel/C8XshEgJ-MN/`, label: 'Recent installation on Instagram', topics: [] },
-  { url: `${IG}/p/C77WTflpypF/`, label: 'Recent installation on Instagram', topics: [] },
-  { url: `${IG}/reel/C72CZzZpoc3/`, label: 'Recent installation on Instagram', topics: [] },
-  { url: `${IG}/reel/C7SWY1Np-tQ/`, label: 'Recent installation on Instagram', topics: [] },
-  { url: `${IG}/reel/C7P1-RupEce/`, label: 'Recent installation on Instagram', topics: [] },
-  { url: `${IG}/p/C6tb_hsAe4L/`, label: 'Recent installation on Instagram', topics: [] },
+  {
+    url: `${IG}/reel/DDIWiAxv8ux/`,
+    label: 'A sheer shade on Instagram',
+    topics: ['tenera-sheer-shades', 'shades'],
+  },
+  {
+    url: `${IG}/reel/DBwfC3BJLj4/`,
+    label: 'Sheer drapery over a blackout shade on Instagram',
+    topics: ['drapery-services'],
+  },
+  { url: `${IG}/p/DArIpGDpfF3/`, label: 'Patio screen shades on Instagram', topics: ['outdoor-patio-shades'] },
+  { url: `${IG}/reel/DAq9SBopYKf/`, label: 'Patio screen shades on Instagram', topics: ['outdoor-patio-shades'] },
+  {
+    url: `${IG}/reel/DAV1K1mpZSV/`,
+    label: 'Three motorized zebra shades on Instagram',
+    topics: [
+      'motorized-blinds',
+      'zebra-shades',
+      'electric-blinds-coral-springs',
+      'electric-blinds-parkland',
+    ],
+  },
+  { url: `${IG}/p/C-5pyHTpvrw/`, label: 'Room darkening zebra shades on Instagram', topics: ['zebra-shades'] },
+  {
+    url: `${IG}/reel/C9FWwl-RMOI/`,
+    label: 'Plantation shutters on Instagram',
+    topics: [
+      'plantation-shutters',
+      'plantation-shutters-coral-springs-florida',
+      'plantation-shutters-boca-raton',
+      'plantation-shutters-parkland-florida',
+    ],
+  },
+  {
+    url: `${IG}/reel/C8fR9AcJban/`,
+    label: 'A large motorized roller shade on Instagram',
+    topics: ['roller-shades', 'motorized-blinds'],
+  },
+  {
+    url: `${IG}/reel/C8XshEgJ-MN/`,
+    label: 'A motorized cellular shade on Instagram',
+    topics: ['motorized-blinds', 'shades'],
+  },
+  { url: `${IG}/p/C77WTflpypF/`, label: 'Drapery hardware on Instagram', topics: ['drapery-services'] },
+  { url: `${IG}/reel/C72CZzZpoc3/`, label: 'Zebra shade fabric on Instagram', topics: ['zebra-shades'] },
+  { url: `${IG}/reel/C7SWY1Np-tQ/`, label: 'Cellular shades on Instagram', topics: ['shades'] },
+  {
+    url: `${IG}/reel/C7P1-RupEce/`,
+    label: 'Cellular shades on a sliding glass door on Instagram',
+    topics: ['shades'],
+  },
+  {
+    url: `${IG}/p/C6tb_hsAe4L/`,
+    label: 'A double roller, screen plus blackout, on Instagram',
+    topics: ['blackout-roller-shades', 'roller-shades'],
+  },
 ]
 
 export const INSTAGRAM_PROFILE = `${IG}/prestige.blinds/`

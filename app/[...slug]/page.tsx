@@ -292,6 +292,7 @@ async function LocalPage(route: RouteEntry) {
         image={svc?.image}
       />
       <Body>{content}</Body>
+      <SeeItInstalled posts={postsFor(l.slug)} />
       <ProcessSteps />
       <PromoBand />
       <FaqAccordion faqs={l.faqs} heading={`${l.term} in ${l.city}: common questions`} />

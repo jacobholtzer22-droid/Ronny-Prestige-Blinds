@@ -13,7 +13,7 @@ export default function LocalPagesList({ heading = 'Service and city pages' }: {
   const pages = config.localPages
   if (pages.length === 0) return null
   return (
-    <section className="mx-auto max-w-page px-4 py-16 sm:px-6 md:py-20">
+    <section className="mx-auto max-w-page px-4 py-12 sm:px-6 md:py-16">
       <Reveal>
         <Eyebrow>By service and city</Eyebrow>
         <h2 className="mt-4 font-heading text-3xl font-bold text-primary-dark">{heading}</h2>
