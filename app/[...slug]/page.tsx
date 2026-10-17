@@ -5,7 +5,6 @@ import type { ReactNode } from 'react'
 import CoverageList from '@/components/CoverageList'
 import CtaBand from '@/components/CtaBand'
 import Em from '@/components/Em'
-import Eyebrow from '@/components/Eyebrow'
 import FaqAccordion from '@/components/FaqAccordion'
 import Gallery from '@/components/Gallery'
 import InnerHero from '@/components/InnerHero'
@@ -15,7 +14,8 @@ import LocalPagesList from '@/components/LocalPagesList'
 import ProcessSteps from '@/components/ProcessSteps'
 import PromoBand from '@/components/PromoBand'
 import RelatedLinks, { type RelatedLink } from '@/components/RelatedLinks'
-import Reveal from '@/components/Reveal'
+import RevealGrid from '@/components/RevealGrid'
+import RevealHeading from '@/components/RevealHeading'
 import ServiceGrid from '@/components/ServiceGrid'
 import { config, formatTime, getArea, getCounty, getLocalPage, getProduct, getService } from '@/lib/config'
 import { loadContent, readFrontmatter } from '@/lib/content'
@@ -352,15 +352,15 @@ function AreaOptions({ cityName }: { cityName: string }) {
   return (
     <section className="bg-surface">
       <div className="mx-auto max-w-page px-4 py-16 sm:px-6 md:py-20">
-        <Reveal>
-          <Eyebrow>What we install</Eyebrow>
-          <h2 className="mt-4 font-heading text-3xl font-bold text-primary-dark">
-            Window treatment options in {cityName}
-          </h2>
-        </Reveal>
-        <div className="mt-10 grid gap-8 md:grid-cols-2">
-          {items.map((item, i) => (
-            <Reveal key={item.path} stagger={i}>
+        <RevealHeading
+          eyebrow="What we install"
+          headingClassName="mt-4 font-heading text-3xl font-bold text-primary-dark"
+        >
+          Window treatment options in {cityName}
+        </RevealHeading>
+        <RevealGrid className="mt-10 grid gap-8 md:grid-cols-2">
+          {items.map((item) => (
+            <div key={item.path}>
               <h3 className="font-heading text-xl font-semibold text-primary-dark">{item.name}</h3>
               <p className="mt-2 text-base leading-relaxed text-muted">{item.shortDescription}</p>
               <Link
@@ -369,9 +369,9 @@ function AreaOptions({ cityName }: { cityName: string }) {
               >
                 More about {item.name.toLowerCase()}
               </Link>
-            </Reveal>
+            </div>
           ))}
-        </div>
+        </RevealGrid>
       </div>
     </section>
   )
@@ -403,26 +403,30 @@ async function CountyPage(route: RouteEntry) {
       {group && (
         <section className="bg-surface">
           <div className="mx-auto max-w-page px-4 py-16 sm:px-6 md:py-20">
-            <Reveal>
-              <Eyebrow>Towns we cover</Eyebrow>
-              <h2 className="mt-4 font-heading text-3xl font-bold text-primary-dark">{c.name}</h2>
-            </Reveal>
-            <ul className="mt-8 grid gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
-              {group.towns.map((town, i) => {
+            <RevealHeading
+              eyebrow="Towns we cover"
+              headingClassName="mt-4 font-heading text-3xl font-bold text-primary-dark"
+            >
+              {c.name}
+            </RevealHeading>
+            <RevealGrid
+              as="ul"
+              itemAs="li"
+              className="mt-8 grid gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-3"
+            >
+              {group.towns.map((town) => {
                 const href = linkable.get(town)
-                return (
-                  <Reveal as="li" key={town} stagger={i}>
-                    {href ? (
-                      <Link href={href} className="block py-1 text-base text-ink hover:text-primary">
-                        {town}
-                      </Link>
-                    ) : (
-                      <span className="block py-1 text-base text-muted">{town}</span>
-                    )}
-                  </Reveal>
+                return href ? (
+                  <Link key={town} href={href} className="block py-1 text-base text-ink transition-colors hover:text-primary">
+                    {town}
+                  </Link>
+                ) : (
+                  <span key={town} className="block py-1 text-base text-muted">
+                    {town}
+                  </span>
                 )
               })}
-            </ul>
+            </RevealGrid>
           </div>
         </section>
       )}
@@ -472,25 +476,24 @@ async function HubPage() {
       <Body>{content}</Body>
       {groups.map((g) => (
         <section key={g.label} className="mx-auto max-w-page px-4 py-10 sm:px-6">
-          <Reveal>
-            <h2 className="font-heading text-2xl font-bold text-primary-dark md:text-3xl">{g.label}</h2>
-          </Reveal>
-          <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <RevealHeading headingClassName="font-heading text-2xl font-bold text-primary-dark md:text-3xl">
+            {g.label}
+          </RevealHeading>
+          <RevealGrid as="ul" itemAs="li" className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {g.slugs
               .map((s) => bySlug.get(s))
               .filter((x): x is NonNullable<typeof x> => Boolean(x))
-              .map((item, i) => (
-                <Reveal as="li" key={item.path} stagger={i}>
-                  <Link
-                    href={item.path}
-                    className="block h-full rounded-site border border-line bg-surface p-5 transition-colors hover:border-primary"
-                  >
-                    <span className="font-heading text-lg font-semibold text-primary-dark">{item.name}</span>
-                    <span className="mt-1 block text-sm leading-relaxed text-muted">{item.shortDescription}</span>
-                  </Link>
-                </Reveal>
+              .map((item) => (
+                <Link
+                  key={item.path}
+                  href={item.path}
+                  className="m-card block h-full rounded-site border border-line bg-surface p-5"
+                >
+                  <span className="font-heading text-lg font-semibold text-primary-dark">{item.name}</span>
+                  <span className="mt-1 block text-sm leading-relaxed text-muted">{item.shortDescription}</span>
+                </Link>
               ))}
-          </ul>
+          </RevealGrid>
         </section>
       ))}
       <LocalPagesList />
@@ -517,36 +520,35 @@ function AreasIndexPage() {
         crumbs={crumbs}
       />
       <section className="mx-auto max-w-page px-4 py-16 sm:px-6 md:py-20">
-        <Reveal>
-          <Eyebrow>Cities</Eyebrow>
-          <h2 className="mt-4 font-heading text-3xl font-bold text-primary-dark">Find your city</h2>
-        </Reveal>
-        <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {config.serviceAreas.map((a, i) => (
-            <Reveal as="li" key={a.path} stagger={i}>
-              <Link
-                href={a.path}
-                className="block h-full rounded-site border border-line bg-surface p-5 transition-colors hover:border-primary"
-              >
-                <span className="font-heading text-lg font-semibold text-primary-dark">{a.name}</span>
-                {a.county && <span className="mt-1 block text-sm text-muted">{a.county}</span>}
-              </Link>
-            </Reveal>
+        <RevealHeading eyebrow="Cities" headingClassName="mt-4 font-heading text-3xl font-bold text-primary-dark">
+          Find your city
+        </RevealHeading>
+        <RevealGrid as="ul" itemAs="li" className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {config.serviceAreas.map((a) => (
+            <Link
+              key={a.path}
+              href={a.path}
+              className="m-card block h-full rounded-site border border-line bg-surface p-5"
+            >
+              <span className="font-heading text-lg font-semibold text-primary-dark">{a.name}</span>
+              {a.county && <span className="mt-1 block text-sm text-muted">{a.county}</span>}
+            </Link>
           ))}
-        </ul>
-        <h2 className="mt-14 font-heading text-3xl font-bold text-primary-dark">By county</h2>
-        <ul className="mt-6 grid gap-4 sm:grid-cols-2">
-          {config.counties.map((c, i) => (
-            <Reveal as="li" key={c.path} stagger={i}>
-              <Link
-                href={c.path}
-                className="block h-full rounded-site border border-line bg-surface p-5 transition-colors hover:border-primary"
-              >
-                <span className="font-heading text-lg font-semibold text-primary-dark">{c.name}</span>
-              </Link>
-            </Reveal>
+        </RevealGrid>
+        <RevealHeading headingClassName="mt-14 font-heading text-3xl font-bold text-primary-dark">
+          By county
+        </RevealHeading>
+        <RevealGrid as="ul" itemAs="li" className="mt-6 grid gap-4 sm:grid-cols-2">
+          {config.counties.map((c) => (
+            <Link
+              key={c.path}
+              href={c.path}
+              className="m-card block h-full rounded-site border border-line bg-surface p-5"
+            >
+              <span className="font-heading text-lg font-semibold text-primary-dark">{c.name}</span>
+            </Link>
           ))}
-        </ul>
+        </RevealGrid>
       </section>
       <LocalPagesList />
       <CoverageList />
@@ -574,10 +576,12 @@ function PortfolioPage() {
       />
       <Gallery heading="Recent installations" />
       <section className="mx-auto max-w-page px-4 py-16 sm:px-6 md:py-20">
-        <Reveal>
-          <Eyebrow>From Instagram</Eyebrow>
-          <h2 className="mt-4 font-heading text-3xl font-bold text-primary-dark">More of what we have been fitting</h2>
-        </Reveal>
+        <RevealHeading
+          eyebrow="From Instagram"
+          headingClassName="mt-4 font-heading text-3xl font-bold text-primary-dark"
+        >
+          More of what we have been fitting
+        </RevealHeading>
         <div className="mt-10">
           <InstagramGrid posts={INSTAGRAM_POSTS} follow />
         </div>
@@ -641,10 +645,9 @@ function SeeItInstalled({ posts }: { posts: InstagramPost[] }) {
   if (posts.length === 0) return null
   return (
     <section className="mx-auto max-w-page px-4 py-16 sm:px-6 md:py-20">
-      <Reveal>
-        <Eyebrow>Our work</Eyebrow>
-        <h2 className="mt-4 font-heading text-3xl font-bold text-primary-dark">See it installed</h2>
-      </Reveal>
+      <RevealHeading eyebrow="Our work" headingClassName="mt-4 font-heading text-3xl font-bold text-primary-dark">
+        See it installed
+      </RevealHeading>
       <div className="mt-10 max-w-3xl">
         <InstagramGrid posts={posts} columns={2} />
       </div>

@@ -14,6 +14,9 @@ import { useEffect, useRef, useState } from 'react'
  *
  * If the account ever goes private, or the script is blocked, the fallback
  * link inside the blockquote is what the visitor sees. That is deliberate.
+ *
+ * The placeholder shimmers until the tile comes near enough to swap, then the
+ * whole placeholder is replaced and the shimmer goes with it.
  */
 
 declare global {
@@ -82,13 +85,18 @@ export default function InstagramEmbed({ url, label }: { url: string; label: str
           )}
         </>
       ) : (
+        // Not near the viewport yet. The shimmer says "a picture is coming
+        // here" rather than leaving a dead panel, and it is a pseudo-element
+        // gradient on a transform, so an off-screen grid of these costs a
+        // compositor layer each and no layout. It goes away with the
+        // placeholder the moment the real embed is requested.
         <a
           href={url}
           rel="noopener nofollow"
           target="_blank"
-          className="flex aspect-square items-center justify-center p-6 text-center text-sm text-muted hover:text-primary"
+          className="m-shimmer relative flex aspect-square items-center justify-center overflow-hidden bg-primary-soft/40 p-6 text-center text-sm text-muted transition-colors duration-200 hover:text-primary"
         >
-          {label}
+          <span className="relative z-10">{label}</span>
         </a>
       )}
     </div>

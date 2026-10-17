@@ -1,4 +1,5 @@
 import { config } from '@/lib/config'
+import TestimonialsCarousel from './TestimonialsCarousel'
 
 /**
  * Customer quotes, shown and nothing more. No stars, no avatars, no platform
@@ -8,23 +9,14 @@ import { config } from '@/lib/config'
  *
  * The attribution sits OUTSIDE the <blockquote>, which is what the HTML spec
  * asks for: a blockquote is the quoted text, and nothing else.
+ *
+ * The quotes themselves, their order and their attributions are unchanged;
+ * this now hands them to a carousel instead of a grid. Under
+ * prefers-reduced-motion the carousel renders all of them stacked, so no
+ * quote is ever behind an autoplay a visitor did not ask for.
  */
 export default function Testimonials({ heading = 'What Customers Say' }: { heading?: string }) {
   const testimonials = config.testimonials
   if (testimonials.length === 0) return null
-  return (
-    <section className="mx-auto max-w-page px-4 py-16 sm:px-6 md:py-24">
-      <h2 className="font-heading text-3xl font-bold text-primary-dark">{heading}</h2>
-      <div className="mt-10 grid gap-x-10 gap-y-10 md:grid-cols-2">
-        {testimonials.map((t) => (
-          <div key={t.name} className="border-l-2 border-accent pl-5">
-            <blockquote>
-              <p className="font-heading text-lg leading-relaxed text-ink">{t.quote}</p>
-            </blockquote>
-            <footer className="mt-3 text-sm font-semibold uppercase tracking-wider text-muted">{t.name}</footer>
-          </div>
-        ))}
-      </div>
-    </section>
-  )
+  return <TestimonialsCarousel heading={heading} items={testimonials} />
 }

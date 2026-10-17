@@ -1,6 +1,6 @@
 import InstagramEmbed from './InstagramEmbed'
 import { INSTAGRAM_HANDLE, INSTAGRAM_PROFILE, type InstagramPost } from '@/lib/instagram'
-import Reveal from './Reveal'
+import RevealGrid from './RevealGrid'
 
 /**
  * A grid of Instagram embeds. Renders nothing when the list is empty, which is
@@ -22,17 +22,15 @@ export default function InstagramGrid({
   const cols = columns === 2 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3'
   return (
     <>
-      <div className={`grid gap-5 ${cols}`}>
-        {posts.map((p, i) => (
-          // min-w-0 matters: a grid column is sized from its content's min-content
-          // width, and Instagram's un-processed blockquote carries a 326px
-          // min-width. Without this, a page where embed.js is blocked, throttled,
-          // or simply slow gets a horizontal scrollbar.
-          <Reveal key={p.url} stagger={i} className="min-w-0">
-            <InstagramEmbed url={p.url} label={p.label} />
-          </Reveal>
+      {/* min-w-0 matters: a grid column is sized from its content's min-content
+          width, and Instagram's un-processed blockquote carries a 326px
+          min-width. Without it, a page where embed.js is blocked, throttled,
+          or simply slow gets a horizontal scrollbar. */}
+      <RevealGrid className={`grid gap-5 ${cols}`} childClassName="min-w-0">
+        {posts.map((p) => (
+          <InstagramEmbed key={p.url} url={p.url} label={p.label} />
         ))}
-      </div>
+      </RevealGrid>
       {follow && (
         <p className="mt-8 text-sm text-muted">
           <a

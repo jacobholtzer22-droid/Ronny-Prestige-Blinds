@@ -3,7 +3,12 @@
 @tailwind utilities;
 
 /* Palette, radius, and shadow are injected as CSS variables by app/layout.tsx
-   from theme.ts. Fonts come from app/fonts.ts via next/font. */
+   from theme.ts. Fonts come from app/fonts.ts via next/font.
+
+   Every duration, delay, easing and distance below reads a --m-* custom
+   property, also injected by app/layout.tsx, from lib/motion.ts. There is no
+   raw millisecond or pixel offset in this file: change lib/motion.ts and both
+   the stylesheet and the components that animate in JS move together. */
 
 @layer base {
   html {
@@ -29,72 +34,532 @@
   }
 }
 
-/* Hero load sequence. The current site's slider staggers its text layers in;
-   this is the same effect in CSS, with the delays in one place. Only opacity
-   and transform animate. Under prefers-reduced-motion nothing moves. */
 @layer components {
-  /* Scroll reveal. See components/Reveal.tsx: the hidden state is a class so
-     the <noscript> rule below can switch it off wholesale. */
-  .reveal {
+  /* ---------------------------------------------------------------------
+     The entrance family. Each of these is a resting (hidden) state plus an
+     `.is-in` state; components/ toggles the class from one shared
+     IntersectionObserver. The hidden state is always a class, never an
+     inline style, so the <noscript> block in app/layout.tsx can switch the
+     whole set off at once for a visitor with scripting disabled.
+
+     Only opacity, transform and clip-path appear here. Nothing animates a
+     width, a height, a margin or an offset, so no entrance can move the
+     content below it.
+     --------------------------------------------------------------------- */
+
+  /* Fade and rise. RevealText, RevealGrid children, Reveal. */
+  .m-rise {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(var(--m-y));
     transition:
-      opacity 500ms ease-out,
-      transform 500ms ease-out;
+      opacity var(--m-base) var(--m-ease),
+      transform var(--m-base) var(--m-ease);
   }
-  .reveal.is-visible {
+  .m-rise.is-in {
     opacity: 1;
     transform: none;
   }
 
-  .hero-item {
+  /* Enter from the side, the old site's slideInLeft and slideInRight. */
+  .m-slide-x {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateX(var(--m-x));
     transition:
-      opacity 500ms ease-out,
-      transform 500ms ease-out;
+      opacity var(--m-base) var(--m-ease),
+      transform var(--m-base) var(--m-ease);
   }
-  .hero-ready .hero-item {
+  .m-slide-x-left {
+    transform: translateX(calc(var(--m-x) * -1));
+  }
+  .m-slide-x.is-in {
     opacity: 1;
     transform: none;
   }
-  .hero-ready .hero-item:nth-child(2) {
-    transition-delay: 120ms;
-  }
-  .hero-ready .hero-item:nth-child(3) {
-    transition-delay: 240ms;
-  }
-  .hero-ready .hero-item:nth-child(4) {
-    transition-delay: 360ms;
-  }
-  /* Slow zoom on the active hero slide, the way the old slider drifts. */
-  .hero-slide-active {
-    animation: hero-zoom 7000ms ease-out forwards;
-  }
-}
 
-@keyframes hero-zoom {
-  from {
-    transform: scale(1);
+  /* A word rising from behind its own baseline. MaskedWords.
+     The pad and its matching negative margin keep `overflow: hidden` from
+     shaving the descenders off g, y and p. */
+  .m-mask {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
+    padding-bottom: 0.14em;
+    margin-bottom: -0.14em;
   }
-  to {
+  .m-mask-in {
+    display: inline-block;
+    transform: translateY(var(--m-mask-y));
+    transition-property: transform;
+    transition-timing-function: var(--m-ease);
+    will-change: transform;
+  }
+  .m-mask-in.is-in {
+    transform: none;
+  }
+
+  /* Clip-path wipe with the picture settling out of an overscale.
+     RevealImage. */
+  .m-wipe {
+    clip-path: inset(0 100% 0 0);
+    transition: clip-path var(--m-slow) var(--m-ease);
+  }
+  .m-wipe.is-in {
+    clip-path: inset(0 0 0 0);
+  }
+  .m-wipe-in {
+    transform: scale(1.1);
+    transition: transform var(--m-slow) var(--m-ease);
+  }
+  .m-wipe.is-in .m-wipe-in {
+    transform: none;
+  }
+
+  /* A rule drawing itself from the left. DrawLine. */
+  .m-line {
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform var(--m-base) var(--m-ease);
+  }
+  .m-line.is-in {
+    transform: scaleX(1);
+  }
+
+  /* Route fade. An animation, not a transition, so it runs on first paint
+     and leaves nothing behind when it ends. PageFade. */
+  .m-page {
+    animation: m-page-in var(--m-page) var(--m-ease) both;
+  }
+
+  /* ---------------------------------------------------------------------
+     Hero. The copy is driven by CSS animations rather than by a transition
+     toggled after hydration: an animation with `backwards` fill starts from
+     its first keyframe during its own delay, so the sequence runs on the
+     server-rendered markup at first paint with no flash and no wait for
+     JavaScript. components/HeroSlideshow.tsx restarts it on a slide change
+     by remounting the copy under a new key.
+     --------------------------------------------------------------------- */
+
+  .hero-eyebrow {
+    animation: m-in-x var(--m-hero-eyebrow) var(--m-ease) var(--m-hero-d-eyebrow) both;
+  }
+  .hero-tagline {
+    animation: m-in-y var(--m-base) var(--m-ease) var(--m-hero-d-tagline) both;
+  }
+  .hero-cta-1 {
+    animation: m-in-y var(--m-base) var(--m-ease) var(--m-hero-d-cta1) both;
+  }
+  .hero-cta-2 {
+    animation: m-in-y var(--m-base) var(--m-ease) var(--m-hero-d-cta2) both;
+  }
+  .hero-cta-3 {
+    animation: m-in-y var(--m-base) var(--m-ease) var(--m-hero-d-cta3) both;
+  }
+  /* The headline's words use the same mask as RevealHeading, but driven by an
+     animation so they too land before hydration. The per-word delay is set
+     inline from lib/motion.ts. */
+  .hero-word {
+    animation: m-mask-up var(--m-hero-word) var(--m-ease) both;
+  }
+  .hero-cue {
+    animation: m-fade var(--m-base) var(--m-ease) var(--m-hero-d-cue) both;
+  }
+  .hero-cue-line {
+    animation: m-cue-pulse 2s var(--m-hero-d-cue) infinite;
+    transform-origin: top center;
+  }
+
+  /* One column of the incoming slide, sweeping in from the right. See
+     components/HeroSlideshow.tsx. */
+  .hero-slot {
+    animation: m-slot-in var(--m-hero-crossfade) var(--m-ease) both;
+  }
+
+  /* Background: a slow zoom with a drift across the slide's whole life, and a
+     crossfade between slides. Linear, because a drift that decelerates reads
+     as a mistake. */
+  .hero-pan {
+    animation: m-hero-pan var(--m-hero-slide) linear both;
+  }
+  .hero-progress {
+    animation: m-progress var(--m-hero-slide) linear both;
+    transform-origin: left center;
+  }
+
+  /* ---------------------------------------------------------------------
+     Interaction
+     --------------------------------------------------------------------- */
+
+  /* Dropdown panel. Always in the DOM; `visibility` is what takes it out of
+     the tab order and the accessibility tree while it is closed, and is also
+     what lets it transition on the way out. */
+  .m-menu {
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(calc(var(--m-menu-y) * -1));
+    transition:
+      opacity var(--m-fast) var(--m-ease),
+      transform var(--m-fast) var(--m-ease),
+      visibility 0s linear var(--m-fast);
+  }
+  .m-menu.is-open {
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+    transition-delay: 0s;
+  }
+
+  /* Mobile drawer, its scrim and its links. Same always-mounted pattern. */
+  .m-scrim {
+    visibility: hidden;
+    opacity: 0;
+    transition:
+      opacity var(--m-drawer) var(--m-ease),
+      visibility 0s linear var(--m-drawer);
+  }
+  .m-scrim.is-open {
+    visibility: visible;
+    opacity: 1;
+    transition-delay: 0s;
+  }
+  .m-drawer {
+    visibility: hidden;
+    transform: translateX(100%);
+    transition:
+      transform var(--m-drawer) var(--m-ease),
+      visibility 0s linear var(--m-drawer);
+  }
+  .m-drawer.is-open {
+    visibility: visible;
+    transform: none;
+    transition-delay: 0s;
+  }
+  .m-drawer-item {
+    opacity: 0;
+    transform: translateY(var(--m-y));
+    transition:
+      opacity var(--m-base) var(--m-ease),
+      transform var(--m-base) var(--m-ease);
+  }
+  .m-drawer.is-open .m-drawer-item {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Testimonial carousel. Every quote shares one grid cell; only the one
+     showing is opaque, so the outgoing quote gets a real exit and the band
+     is always as tall as the longest quote. */
+  .m-quote {
+    visibility: hidden;
+    opacity: 0;
+    transform: translateX(var(--m-quote-x));
+    transition:
+      opacity var(--m-base) var(--m-ease),
+      transform var(--m-base) var(--m-ease),
+      visibility 0s linear var(--m-base);
+  }
+  .m-quote.is-in {
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+    transition-delay: 0s;
+  }
+
+  /* The shimmer an Instagram tile shows until its embed renders. */
+  .m-shimmer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      rgb(255 255 255 / 0) 20%,
+      rgb(255 255 255 / 0.55) 50%,
+      rgb(255 255 255 / 0) 80%
+    );
+    transform: translateX(-100%);
+    animation: m-shimmer 1.8s linear infinite;
+  }
+
+  /* Buttons. The fill brightens, the arrow steps right, the whole pill
+     settles while pressed. Focus-visible gets the hover state too, because a
+     keyboard should see what a pointer sees. Transform and filter only: a
+     press never moves the buttons beside it. */
+  .m-btn {
+    transition:
+      background-color var(--m-fast) var(--m-ease),
+      border-color var(--m-fast) var(--m-ease),
+      color var(--m-fast) var(--m-ease),
+      filter var(--m-fast) var(--m-ease),
+      transform var(--m-fast) var(--m-ease);
+  }
+  .m-btn:hover,
+  .m-btn:focus-visible {
+    filter: brightness(1.08);
+  }
+  .m-btn:active {
+    transform: scale(0.98);
+  }
+  .m-btn-arrow {
+    display: inline-block;
+    transition: transform var(--m-fast) var(--m-ease);
+  }
+  .m-btn:hover .m-btn-arrow,
+  .m-btn:focus-visible .m-btn-arrow {
+    transform: translateX(var(--m-lift));
+  }
+
+  /* Product tile. The card lifts, the photograph grows past its frame, the
+     gradient deepens, the name steps up and an arrow slides in beside it. */
+  .m-tile {
+    transition: transform var(--m-fast) var(--m-ease);
+  }
+  .m-tile:hover,
+  .m-tile:focus-visible {
+    transform: translateY(calc(var(--m-lift) * -1));
+  }
+  .m-tile-img {
+    transition: transform var(--m-tile-image) var(--m-ease);
+  }
+  .m-tile:hover .m-tile-img,
+  .m-tile:focus-visible .m-tile-img {
     transform: scale(1.06);
   }
+  .m-tile-scrim {
+    transition: opacity var(--m-tile-image) var(--m-ease);
+    opacity: 0.8;
+  }
+  .m-tile:hover .m-tile-scrim,
+  .m-tile:focus-visible .m-tile-scrim {
+    opacity: 1;
+  }
+  .m-tile-name {
+    transition: transform var(--m-fast) var(--m-ease);
+  }
+  .m-tile:hover .m-tile-name,
+  .m-tile:focus-visible .m-tile-name {
+    transform: translateY(calc(var(--m-lift) * -1));
+  }
+  .m-tile-arrow {
+    display: inline-block;
+    opacity: 0;
+    transform: translateX(calc(var(--m-x) * -0.4));
+    transition:
+      opacity var(--m-fast) var(--m-ease),
+      transform var(--m-fast) var(--m-ease);
+  }
+  .m-tile:hover .m-tile-arrow,
+  .m-tile:focus-visible .m-tile-arrow {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* FAQ. See components/FaqItem.tsx for why the open attribute is held on
+     through a close. */
+  .m-faq-body {
+    grid-template-rows: 0fr;
+    transition: grid-template-rows var(--m-accordion) var(--m-ease);
+  }
+  .m-faq-body.is-open {
+    grid-template-rows: 1fr;
+  }
+  .m-faq-answer {
+    opacity: 0;
+    transition: opacity var(--m-fast) var(--m-ease);
+  }
+  .m-faq-body.is-open .m-faq-answer {
+    opacity: 1;
+    transition-delay: var(--m-accordion-fade);
+  }
+  .m-faq-chev {
+    transition: transform var(--m-accordion) var(--m-ease);
+  }
+  .m-faq-chev.is-open {
+    transform: rotate(180deg);
+  }
+
+  /* A link card. Lifts and takes the accent border, the same gesture as a
+     product tile at a quieter volume. */
+  .m-card {
+    transition:
+      border-color var(--m-fast) var(--m-ease),
+      transform var(--m-fast) var(--m-ease);
+  }
+  .m-card:hover,
+  .m-card:focus-visible {
+    border-color: var(--c-primary);
+    transform: translateY(calc(var(--m-lift) * -1));
+  }
+
+  /* An iframe fading in once it has loaded. */
+  .m-frame {
+    opacity: 0;
+    transition: opacity var(--m-base) var(--m-ease);
+  }
+  .m-frame.is-in {
+    opacity: 1;
+  }
 }
 
+@keyframes m-page-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes m-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes m-in-y {
+  from {
+    opacity: 0;
+    transform: translateY(var(--m-y));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes m-in-x {
+  from {
+    opacity: 0;
+    transform: translateX(calc(var(--m-x) * -1));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes m-mask-up {
+  from {
+    transform: translateY(var(--m-mask-y));
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes m-hero-pan {
+  from {
+    transform: scale(var(--m-hero-zoom-from)) translateX(0);
+  }
+  to {
+    transform: scale(var(--m-hero-zoom-to)) translateX(var(--m-hero-drift));
+  }
+}
+@keyframes m-slot-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes m-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes m-cue-pulse {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+    opacity: 0.45;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+@keyframes m-shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Reduced motion. Everything that enters is already in place, nothing
+   autoplays, nothing loops, and nothing drifts. The hero shows one frame.
+   The interactive pieces still work; they just arrive instead of travelling.
+   --------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
-  .reveal {
-    opacity: 1;
-    transform: none;
-    transition: none;
+  .m-rise,
+  .m-slide-x,
+  .m-wipe,
+  .m-wipe-in,
+  .m-line,
+  .m-frame {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+    transition: none !important;
   }
-  .hero-item {
-    opacity: 1;
-    transform: none;
-    transition: none;
+  .m-mask {
+    overflow: visible;
+    padding-bottom: 0;
+    margin-bottom: 0;
   }
-  .hero-slide-active {
-    animation: none;
+  .m-mask-in {
+    transform: none !important;
+    transition: none !important;
+  }
+  .m-card,
+  .m-faq-body,
+  .m-faq-answer,
+  .m-faq-chev {
+    transition: none !important;
+  }
+  .m-btn,
+  .m-btn-arrow,
+  .m-tile,
+  .m-tile-img,
+  .m-tile-scrim,
+  .m-tile-name,
+  .m-tile-arrow {
+    transition: none !important;
+  }
+  /* The tile arrow is a hover affordance, not content: with reduced motion
+     it simply stays put rather than sliding, and still appears on hover. */
+  .m-tile-arrow {
+    transform: none !important;
+  }
+  .m-menu,
+  .m-scrim,
+  .m-drawer,
+  .m-drawer-item,
+  .m-quote {
+    transition: none !important;
+  }
+  /* The drawer is closed and `visibility: hidden` either way, but its links
+     should not depend on the open rule to become visible: with reduced
+     motion they are simply always at rest. */
+  .m-drawer-item {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .m-page,
+  .hero-eyebrow,
+  .hero-tagline,
+  .hero-cta-1,
+  .hero-cta-2,
+  .hero-cta-3,
+  .hero-word,
+  .hero-slot,
+  .hero-cue,
+  .hero-cue-line,
+  .hero-pan,
+  .hero-progress,
+  .m-shimmer::after {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
   html {
     scroll-behavior: auto;

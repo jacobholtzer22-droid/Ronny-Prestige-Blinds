@@ -1,8 +1,9 @@
 import { config } from '@/lib/config'
 import CountUp from './CountUp'
+import DrawLine from './DrawLine'
 import Em from './Em'
-import Eyebrow from './Eyebrow'
-import Reveal from './Reveal'
+import RevealGrid from './RevealGrid'
+import RevealHeading from './RevealHeading'
 
 /** Line icons, inline so there is no icon font and no extra request. */
 const ICONS: Record<string, JSX.Element> = {
@@ -54,14 +55,15 @@ export default function WhyPrestige() {
   return (
     <section className="bg-surface">
       <div className="mx-auto max-w-page px-4 py-20 sm:px-6 md:py-28">
-        <Reveal>
-          <Eyebrow>Why Prestige</Eyebrow>
-          <h2 className="mt-4 font-heading text-3xl font-bold text-primary-dark md:text-4xl">
-            Why choose <Em>Prestige Blinds</Em>?
-          </h2>
-        </Reveal>
-        <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          <Reveal stagger={0}>
+        <DrawLine className="mb-6" />
+        <RevealHeading
+          eyebrow="Why Prestige"
+          headingClassName="mt-4 font-heading text-3xl font-bold text-primary-dark md:text-4xl"
+        >
+          Why choose <Em>Prestige Blinds</Em>?
+        </RevealHeading>
+        <RevealGrid className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div>
             <Icon name="years" />
             <h3 className="mt-4 font-heading text-xl font-semibold text-primary-dark">
               {years !== null ? (
@@ -76,8 +78,8 @@ export default function WhyPrestige() {
               Two decades of choosing treatments for this climate specifically, which is a different judgment call from
               the one a catalog makes.
             </p>
-          </Reveal>
-          <Reveal stagger={1}>
+          </div>
+          <div>
             <Icon name="selection" />
             <h3 className="mt-4 font-heading text-xl font-semibold text-primary-dark">
               Wide selection of window treatments
@@ -86,16 +88,16 @@ export default function WhyPrestige() {
               Trusted brands including Norman and Lafayette, with hundreds of fabrics and materials to choose from. We
               bring the samples to you.
             </p>
-          </Reveal>
-          <Reveal stagger={2}>
+          </div>
+          <div>
             <Icon name="speed" />
             <h3 className="mt-4 font-heading text-xl font-semibold text-primary-dark">Same-day estimates</h3>
             <p className="mt-2 text-base leading-relaxed text-muted">
               Same-day installation is available on in-stock products. Custom shutters and special orders are made to
               your windows, so those take longer.
             </p>
-          </Reveal>
-          <Reveal stagger={3}>
+          </div>
+          <div>
             <Icon name="custom" />
             <h3 className="mt-4 font-heading text-xl font-semibold text-primary-dark">
               Special orders and custom options
@@ -104,8 +106,8 @@ export default function WhyPrestige() {
               Everything is made to the opening, and we can match the color scheme already in the room rather than
               approximate it.
             </p>
-          </Reveal>
-        </div>
+          </div>
+        </RevealGrid>
       </div>
     </section>
   )

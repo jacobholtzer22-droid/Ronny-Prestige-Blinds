@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { config, formatTime } from '@/lib/config'
 import Phone from './Phone'
+import RevealGrid from './RevealGrid'
 
 const PROFILE_LABELS: Record<string, string> = {
   gbp: 'Google',
@@ -19,7 +20,7 @@ export default function Footer() {
 
   return (
     <footer className="mt-16 border-t border-line bg-primary-dark text-on-primary">
-      <div className="mx-auto grid max-w-page gap-10 px-4 py-12 sm:px-6 md:grid-cols-4">
+      <RevealGrid className="mx-auto grid max-w-page gap-10 px-4 py-12 sm:px-6 md:grid-cols-4">
         <div>
           <p className="font-heading text-lg font-bold">{config.displayName}</p>
           <p className="mt-2 text-sm opacity-80">{config.tagline}</p>
@@ -111,7 +112,7 @@ export default function Footer() {
             </div>
           )}
         </div>
-      </div>
+      </RevealGrid>
       <div className="border-t border-white/10">
         <div className="mx-auto flex max-w-page flex-wrap items-center justify-between gap-2 px-4 py-4 text-xs opacity-70 sm:px-6">
           <p>

@@ -1,5 +1,5 @@
-import Eyebrow from './Eyebrow'
-import Reveal from './Reveal'
+import RevealGrid from './RevealGrid'
+import RevealHeading from './RevealHeading'
 
 /**
  * The five steps from consultation to cleanup, the sequence the current site
@@ -18,21 +18,20 @@ export default function ProcessSteps({ heading = 'How it works' }: { heading?: s
   return (
     <section className="bg-surface">
       <div className="mx-auto max-w-page px-4 py-16 sm:px-6 md:py-20">
-        <Reveal>
-          <Eyebrow>The process</Eyebrow>
-          <h2 className="mt-4 font-heading text-3xl font-bold text-primary-dark">{heading}</h2>
-        </Reveal>
-        <ol className="mt-10 grid gap-8 md:grid-cols-5">
+        <RevealHeading eyebrow="The process" headingClassName="mt-4 font-heading text-3xl font-bold text-primary-dark">
+          {heading}
+        </RevealHeading>
+        <RevealGrid as="ol" itemAs="li" className="mt-10 grid gap-8 md:grid-cols-5">
           {STEPS.map(([title, body], i) => (
-            <Reveal as="li" key={title} stagger={i}>
+            <div key={title}>
               <span className="font-heading text-sm font-semibold tabular-nums text-accent">
                 {String(i + 1).padStart(2, '0')}
               </span>
               <h3 className="mt-2 font-heading text-lg font-semibold text-primary-dark">{title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-muted">{body}</p>
-            </Reveal>
+            </div>
           ))}
-        </ol>
+        </RevealGrid>
       </div>
     </section>
   )

@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import { config } from '@/lib/config'
 import { getImage, hasImage } from '@/lib/images'
+import DrawLine from './DrawLine'
 import Em from './Em'
-import Eyebrow from './Eyebrow'
-import Reveal from './Reveal'
+import RevealGrid from './RevealGrid'
+import RevealHeading from './RevealHeading'
 
 /**
  * The eight product tiles the current site leads with, in its order. Each tile
@@ -12,6 +13,11 @@ import Reveal from './Reveal'
  *
  * A tile with no photograph falls back to a solid panel rather than a gap, so
  * the grid never breaks when a product has no image yet.
+ *
+ * The tiles enter as one staggered group, which is the section the client's
+ * current site animates hardest: his slides its two tile rows in from the
+ * sides on a slow Elementor slideInLeft. Hover is in `.m-tile` in
+ * app/globals.css.
  */
 const TILE_SLUGS = [
   'blinds',
@@ -32,46 +38,49 @@ export default function ProductTiles() {
 
   return (
     <section className="mx-auto max-w-page px-4 py-20 sm:px-6 md:py-28">
-      <Reveal>
-        <Eyebrow>Premium quality blinds and shutters in Florida</Eyebrow>
-        <h2 className="mt-4 max-w-3xl font-heading text-3xl font-bold text-primary-dark md:text-4xl">
-          Designer looks at <Em>affordable</Em> prices
-        </h2>
-      </Reveal>
-      <div className="mt-12 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {tiles.map((t, i) => {
+      <DrawLine className="mb-6" />
+      <RevealHeading
+        eyebrow="Premium quality blinds and shutters in Florida"
+        headingClassName="mt-4 max-w-3xl font-heading text-3xl font-bold text-primary-dark md:text-4xl"
+      >
+        Designer looks at <Em>affordable</Em> prices
+      </RevealHeading>
+      <RevealGrid perRow={4} className="mt-12 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {tiles.map((t) => {
           const img = t.image && hasImage(t.image) ? getImage(t.image) : null
           return (
-            <Reveal key={t.path} stagger={i}>
-              <Link
-                href={t.path}
-                className="group relative block aspect-[4/5] overflow-hidden rounded-site bg-primary"
-              >
-                {img && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={img.src}
-                    srcSet={img.srcSet}
-                    sizes="(min-width: 1024px) 25vw, 50vw"
-                    alt={img.alt}
-                    loading="lazy"
-                    decoding="async"
-                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-[400ms] ease-out motion-safe:group-hover:scale-[1.03]"
-                  />
-                )}
-                <span
-                  aria-hidden="true"
-                  className="absolute inset-x-0 bottom-0 h-2/3"
-                  style={{ background: 'linear-gradient(180deg, rgb(0 0 0 / 0) 0%, rgb(0 0 0 / 0.72) 100%)' }}
+            <Link
+              key={t.path}
+              href={t.path}
+              className="m-tile relative block aspect-[4/5] overflow-hidden rounded-site bg-primary"
+            >
+              {img && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={img.src}
+                  srcSet={img.srcSet}
+                  sizes="(min-width: 1024px) 25vw, 50vw"
+                  alt={img.alt}
+                  loading="lazy"
+                  decoding="async"
+                  className="m-tile-img absolute inset-0 h-full w-full object-cover"
                 />
-                <span className="absolute inset-x-0 bottom-0 p-4 font-heading text-base font-semibold text-on-primary md:text-lg">
-                  {t.name}
+              )}
+              <span
+                aria-hidden="true"
+                className="m-tile-scrim absolute inset-x-0 bottom-0 h-2/3"
+                style={{ background: 'linear-gradient(180deg, rgb(0 0 0 / 0) 0%, rgb(0 0 0 / 0.72) 100%)' }}
+              />
+              <span className="m-tile-name absolute inset-x-0 bottom-0 flex items-center gap-1.5 p-4 font-heading text-base font-semibold text-on-primary md:text-lg">
+                {t.name}
+                <span aria-hidden="true" className="m-tile-arrow">
+                  &rarr;
                 </span>
-              </Link>
-            </Reveal>
+              </span>
+            </Link>
           )
         })}
-      </div>
+      </RevealGrid>
     </section>
   )
 }

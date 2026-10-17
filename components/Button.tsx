@@ -6,9 +6,16 @@ import type { ReactNode } from 'react'
  * rounded call-to-action. Primary is the accent fill; secondary is a 1px
  * outline with an arrow glyph. Cards and images keep theme.radius; only
  * buttons are pills.
+ *
+ * Motion lives in the `.m-btn` rules in app/globals.css: the fill brightens,
+ * the whole pill settles to 0.98 while pressed, and the arrow glyph steps to
+ * the right. An outline button fills on hover instead of brightening. All of
+ * it is transform, colour and filter, so a press never moves its neighbours.
+ * Focus-visible gets the same treatment as hover, because a keyboard should
+ * see what a pointer sees.
  */
 const BASE =
-  'inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-base font-semibold transition-colors'
+  'm-btn inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-base font-semibold'
 
 export default function Button({
   href,
@@ -34,7 +41,7 @@ export default function Button({
     <Link href={href} className={`${BASE} ${style} ${className}`}>
       {children}
       {variant === 'secondary' && (
-        <span aria-hidden="true" className="text-[1.05em] leading-none">
+        <span aria-hidden="true" className="m-btn-arrow text-[1.05em] leading-none">
           &rarr;
         </span>
       )}

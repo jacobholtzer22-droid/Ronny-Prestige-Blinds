@@ -1,9 +1,11 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { MOTION, prefersReducedMotion } from '@/lib/motion'
 
 /**
- * Counts up to `to` over 1.2s the first time it scrolls into view. Renders the
+ * Counts up to `to` over MOTION.interaction.count the first time it scrolls
+ * into view. Renders the
  * final number immediately under prefers-reduced-motion, and server-side, so
  * the value is in the HTML whether or not the script ever runs.
  */
@@ -15,8 +17,7 @@ export default function CountUp({ to, className = '' }: { to: number; className?
   useEffect(() => {
     const el = ref.current
     if (!el || typeof window === 'undefined') return
-    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-    if (reduced || !('IntersectionObserver' in window)) return
+    if (prefersReducedMotion() || !('IntersectionObserver' in window)) return
     setValue(0)
     setArmed(true)
     const io = new IntersectionObserver(
@@ -25,7 +26,7 @@ export default function CountUp({ to, className = '' }: { to: number; className?
         io.disconnect()
         const start = performance.now()
         const tick = (now: number) => {
-          const t = Math.min((now - start) / 1200, 1)
+          const t = Math.min((now - start) / MOTION.interaction.count, 1)
           // ease-out cubic
           setValue(Math.round(to * (1 - Math.pow(1 - t, 3))))
           if (t < 1) requestAnimationFrame(tick)

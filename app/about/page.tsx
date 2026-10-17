@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Credentials from '@/components/Credentials'
 import CtaBand from '@/components/CtaBand'
 import Img from '@/components/Img'
+import RevealImage from '@/components/RevealImage'
 import JsonLd from '@/components/JsonLd'
 import Em from '@/components/Em'
 import InnerHero from '@/components/InnerHero'
@@ -45,9 +46,9 @@ export default async function AboutPage() {
         </article>
         {config.images.about && (
           <aside>
-            <div className="overflow-hidden rounded-site">
+            <RevealImage>
               <Img name={config.images.about} sizes="(min-width: 1024px) 33vw, 100vw" className="h-auto w-full" />
-            </div>
+            </RevealImage>
           </aside>
         )}
       </div>
