@@ -6,6 +6,7 @@ an answer is missing, the matching field is null and the block does not render.
 ## Photos
 
 - Send original job photos and videos, straight off the phone or camera, at full resolution. Everything on the site right now was pulled off the current website, where it had already been compressed by WordPress. This is the single biggest visual upgrade available: the hero photograph is currently limited by the resolution of the old site's copies.
+  - The homepage hero is stock until we have your originals; your real photos are on the product tiles, Our Work, and About.
 - Add Jacob as an owner on the prestigewoodblinds.com Google Search Console property, so the URL changes can be monitored through the domain cutover.
 - Do you have photos of a drapery job and a blinds job in a finished room? Those two are the thinnest.
 - Do you have photos of a commercial or hospitality job we are allowed to show?

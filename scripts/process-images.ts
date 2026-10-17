@@ -1,10 +1,18 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import sharp from 'sharp'
+import rawConfig from '../site.config'
 
 /**
  * Converts everything in public/images/originals/ to WebP at 640/1024/1920
  * (never wider than the original) and writes public/images/manifest.json.
+ *
+ * Hero-role images go one step further, to 2560. A hero is drawn full-bleed,
+ * so on a 1920 screen at devicePixelRatio 2 the browser wants 3840 device
+ * pixels across; everything else on the site sits in a column half that wide
+ * or less. Capping the hero at 1920 was the difference between a sharp
+ * photograph and a soft one, and it cost nothing anywhere else because only
+ * the hero files get the extra size.
  *
  * The manifest is keyed by ORIGINAL FILENAME, never by array position. A
  * previous project shipped nine alts shifted by one because they were
@@ -20,7 +28,21 @@ const ORIGINALS = path.join(ROOT, 'public/images/originals')
 const PROCESSED = path.join(ROOT, 'public/images/processed')
 const MANIFEST = path.join(ROOT, 'public/images/manifest.json')
 const WIDTHS = [640, 1024, 1920]
+/** Hero-role only. See the note above for why these get a wider top end. */
+const HERO_WIDTHS = [640, 1024, 1920, 2560]
 const QUALITY = 82
+
+/**
+ * The filenames the homepage hero draws full-bleed, read from the config
+ * rather than listed here, so adding a slide cannot silently leave it at the
+ * narrow cap. config.images.hero is included because verify check 19 measures
+ * contrast against it.
+ */
+const HERO_FILES = new Set<string>(
+  [rawConfig.images.hero, ...(rawConfig.images.heroSlides ?? [])].filter(
+    (n): n is string => typeof n === 'string' && n.length > 0,
+  ),
+)
 const EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.tif', '.tiff', '.avif', '.gif'])
 
 interface Entry {
@@ -79,7 +101,8 @@ async function main() {
     const width = swap ? meta.height : meta.width
     const height = swap ? meta.width : meta.height
 
-    const targets = WIDTHS.filter((w) => w <= width)
+    const ladder = HERO_FILES.has(file) ? HERO_WIDTHS : WIDTHS
+    const targets = ladder.filter((w) => w <= width)
     if (targets.length === 0) targets.push(width)
 
     for (const w of targets) {
@@ -95,7 +118,10 @@ async function main() {
       base,
       sizes: targets,
     }
-    console.log(`${file}  ${width}x${height}  ->  ${targets.map((w) => `${w}w`).join(' ')}${prior?.alt ? '' : '  (alt: null)'}`)
+    const role = HERO_FILES.has(file) ? '  [hero]' : ''
+    console.log(
+      `${file}  ${width}x${height}  ->  ${targets.map((w) => `${w}w`).join(' ')}${role}${prior?.alt ? '' : '  (alt: null)'}`,
+    )
   }
 
   // Remove processed files whose original is gone.

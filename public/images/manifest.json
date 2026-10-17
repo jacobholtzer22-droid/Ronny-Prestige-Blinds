@@ -93,6 +93,42 @@
       1024
     ]
   },
+  "stock-hero-drapery.jpg": {
+    "width": 3200,
+    "height": 2172,
+    "alt": "Floor-length drapery panels at the windows of a light-filled living room",
+    "base": "stock-hero-drapery",
+    "sizes": [
+      640,
+      1024,
+      1920,
+      2560
+    ]
+  },
+  "stock-hero-shades.jpg": {
+    "width": 3200,
+    "height": 2136,
+    "alt": "Roller shades lowered over tall windows in a bright open living room",
+    "base": "stock-hero-shades",
+    "sizes": [
+      640,
+      1024,
+      1920,
+      2560
+    ]
+  },
+  "stock-hero-shutters.jpg": {
+    "width": 3200,
+    "height": 2133,
+    "alt": "White plantation shutters on a bank of sunlit dining room windows",
+    "base": "stock-hero-shutters",
+    "sizes": [
+      640,
+      1024,
+      1920,
+      2560
+    ]
+  },
   "wood-blinds-bedroom.jpg": {
     "width": 750,
     "height": 550,

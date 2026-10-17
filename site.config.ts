@@ -1218,7 +1218,8 @@ const siteConfig = {
   ],
 
   images: {
-    hero: 'solar-screen-shade-lanai.jpg',
+    // First slide, and the frame scripts/contrast-check.ts measures.
+    hero: 'stock-hero-shutters.jpg',
     about: 'prestige-blinds-team.jpg',
     gallery: [
       'solar-screen-shade-lanai.jpg',
@@ -1234,10 +1235,19 @@ const siteConfig = {
     heroVideo: null,
     // Crossfading hero, mirroring the three-slide slider on the current site.
     // The first entry is `hero` above: the frame rendered server-side.
-    // Chosen for horizontal resolution, not composition: a full-bleed hero is
-    // scaled to the viewport width, so a 750px original turns to mush at 1440.
-    // These are the three widest real photographs we have.
-    heroSlides: ['solar-screen-shade-lanai.jpg', 'motorized-patio-screen.jpg', 'custom-drapery-tieback.jpg'],
+    //
+    // These three are licensed stock, and the only stock anywhere on the site.
+    // The hero is the one place that is drawn full-bleed, so on a 1920 screen
+    // at devicePixelRatio 2 it needs 3840 device pixels across. The client's
+    // own photographs are 1024 to 1290 wide copies pulled off his current
+    // WordPress site, which the pipeline could only emit at 1024w: that is a
+    // 3.75x upscale, and it looked it. Every one of them is still on the site,
+    // on its product tile, in the gallery and on About; none was removed.
+    //
+    // Swap these back out the moment the client sends original job photos.
+    // STOCK-PHOTOS.md carries the source and photographer for each one, and
+    // the client questions file asks him for the originals as its first item.
+    heroSlides: ['stock-hero-shutters.jpg', 'stock-hero-shades.jpg', 'stock-hero-drapery.jpg'],
   },
 
   offer: {

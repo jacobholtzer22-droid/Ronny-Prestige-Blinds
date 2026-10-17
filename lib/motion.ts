@@ -82,25 +82,23 @@ export const MOTION = {
     /** Crossfade between two slides. */
     crossfade: 1200,
     /**
-     * Background pan. It pulls BACK rather than pushing in: the slide opens
-     * slightly magnified and settles to its widest framing, so the frame a
-     * visitor spends most of the slide looking at is the least cropped one.
+     * Background pan. Deliberately tiny.
      *
-     * The usual Ken Burns push-in does the opposite, and on this hero that
-     * was the wrong choice twice over: these three photographs are portrait
-     * (0.84, 0.81 and 0.67) in a 1.94 band, so only about 43% of each one is
-     * visible before any zoom at all, and a push-in spent the whole seven
-     * seconds making that worse. Kept small for the same reason.
+     * The client's current site has no Ken Burns on its slider at all, and a
+     * large scale on a full-bleed photograph does not read as movement, it
+     * reads as the image going soft: every pixel is being resampled for the
+     * whole seven seconds. Three percent is enough to keep the frame alive
+     * and small enough that nothing visibly blurs.
      *
-     * The drift stays well inside the overscale the zoom buys, so no edge can
-     * ever come into view: at scale 1.05 there is 2.5% of headroom per side
-     * and the drift asks for 1.2%.
+     * The drift stays inside the overscale the zoom buys so no edge can come
+     * into view. It starts at zero because at scale 1.0 there is no headroom
+     * at all; by the end there is 1.5% per side and the drift asks for 0.8%.
      */
-    zoomFrom: 1.05,
-    zoomTo: 1,
+    zoomFrom: 1,
+    zoomTo: 1.03,
     /** Drift start and end, as a percentage of the photo's own width. */
-    driftFrom: 1.2,
-    driftTo: 0,
+    driftFrom: 0,
+    driftTo: 0.8,
     delay: {
       eyebrow: 100,
       headline: 300,
