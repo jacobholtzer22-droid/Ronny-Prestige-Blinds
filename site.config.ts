@@ -1368,7 +1368,7 @@ const siteConfig = {
 
   // Pre-launch: noindex everywhere and robots.txt disallows all.
   // Flip to false at launch, then redeploy.
-  prelaunch: true,
+  prelaunch: false,
 
   domain: 'https://www.prestigeblindsfl.com',
 } satisfies SiteConfigInput
