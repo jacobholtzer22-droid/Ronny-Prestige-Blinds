@@ -156,10 +156,20 @@ jobs:
           # branch, not a detached shallow clone.
           fetch-depth: 0
 
+      - name: Node version
+        id: node
+        # Client repos made from the template before .nvmrc existed have no
+        # such file, and setup-node fails hard on a missing node-version-file.
+        # Read it when present, otherwise use 20 (package.json engines >=20).
+        run: |
+          if [ -f .nvmrc ]; then v="$(tr -d '[:space:]' < .nvmrc)"; else v=20; fi
+          echo "version=${v:-20}" >> "$GITHUB_OUTPUT"
+          echo "Node ${v:-20}"
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version-file: .nvmrc
+          node-version: ${{ steps.node.outputs.version }}
           cache: npm
 
       - name: Install dependencies
