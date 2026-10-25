@@ -331,6 +331,11 @@ jobs:
       - name: Open the pull request
         id: pr
         if: always() && steps.push.outputs.empty == 'false'
+        # Repos default to "Actions may not create pull requests", and this
+        # workflow cannot change that. When GitHub refuses, the job still
+        # succeeds and the callback carries pr_url null: the platform then
+        # opens the PR from the pushed branch with its own token.
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: ${{ steps.push.outputs.branch }}
@@ -388,6 +393,7 @@ jobs:
           VERIFY_PASSED: ${{ steps.gate.outputs.verify_passed }}
           FAILING_CHECKS: ${{ steps.gate.outputs.failing_checks }}
           JOB_STATUS: ${{ job.status }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set -euo pipefail
 
@@ -411,6 +417,7 @@ jobs:
             --arg status        "$JOB_STATUS" \
             --arg branch        "$BRANCH" \
             --arg pr_url        "${PR_URL:-}" \
+            --arg run_url       "$RUN_URL" \
             --arg failing       "${FAILING_CHECKS:-}" \
             --arg excerpt       "$excerpt" \
             --argjson verify_passed "${VERIFY_PASSED:-false}" \
@@ -420,6 +427,7 @@ jobs:
                status: $status,
                branch: $branch,
                pr_url: (if $pr_url == "" then null else $pr_url end),
+               run_url: $run_url,
                verify_passed: $verify_passed,
                failing_checks: (if $failing == "" then [] else ($failing | split(", ")) end),
                report_excerpt: $excerpt
