@@ -1370,7 +1370,7 @@ const siteConfig = {
   // Flip to false at launch, then redeploy.
   prelaunch: true,
 
-  domain: 'https://www.prestigewoodblinds.com',
+  domain: 'https://www.prestigeblindsfl.com',
 } satisfies SiteConfigInput
 
 export default siteConfig
