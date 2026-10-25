@@ -108,3 +108,34 @@ Then print, in this order:
 8. Anything you believe is wrong with the template itself.
 
 Do not summarize what you built. The verify output and the config are the report.
+
+Non-interactive (CI) mode
+This section applies when the build runs as a GitHub Actions job rather than in a terminal with a human watching. `.github/workflows/aa-build.yml` is the caller. Nothing here relaxes a rule; it only says which steps change shape when there is no one to look at a screenshot.
+
+Three kinds of run. The workflow passes exactly one.
+
+* `site_build` — a new site. Follow all of AGENT.md from Phase 1, reading `BRIEF.md`.
+* `site_update` — a change to a site that already exists. Read `INSTRUCTIONS.md` and do only what it asks. Do not re-run the phases that are already done, do not redesign, do not rewrite content the instructions did not name. Every absolute rule and every phase rule still binds whatever you touch: no invented facts, no facts typed into content, no hand-written JSON-LD, config stays the only home for business facts. The gate still runs and still has to pass.
+* `go_live` — the one run that may set `launch.indexable` to `true`, and the only exception to absolute rule 7. `INSTRUCTIONS.md` says exactly one thing and you do exactly that: set `launch.indexable` to `true` in `site.config.ts`, change nothing else, run the gate, report. Do not touch content, design, config facts, images or components. Do not "improve" anything you notice on the way past — if something is wrong, say so under item 8 and leave it. A `go_live` diff that touches more than that one boolean is wrong by construction, and the human reviewing the PR is checking the client approved a launch, not re-reviewing a site. Check 21 then expects no robots meta on any page and a normal `robots.txt` with the sitemap line; if the gate is red, the site does not go live.
+
+What changes in CI.
+
+* Phase 5 screenshots are skipped. There is no browser and no dev server. Run `npm run build` instead, and replace steps 2 and 3 with a written self-check: read your own `theme.ts`, the components you changed, and the MDX you wrote, then name the three things most likely to make this site read as templated, judged against the Phase 2d banned-pattern list and the Phase 2b direction you committed to. Be as specific as Phase 5 demands. Fix all three and say what you changed. "I could not see it so I could not tell" is not an answer; the banned-pattern list is checkable by reading the code.
+* Phase 7 is unchanged except that it matters more: `BUILD-REPORT.md` is the only output a human will read. Still commit to `build/<businessSlug>`. Still do not push, do not merge, do not deploy, do not open a pull request. The workflow pushes the branch and opens the PR; if you push, you race it.
+* The brief is an input, not a working file. `BRIEF.md` (or `INSTRUCTIONS.md`) is written by the workflow from the dispatch payload. Read it as many times as you like. Never edit it, never reformat it, never "correct" it, never delete it. If it contradicts itself or omits `businessSlug`, stop and say so in `BUILD-REPORT.md` — that is the signal the human needs, and silently patching the brief destroys it.
+
+Forbidden in CI, without exception. Each of these makes the gate pass while the thing it guards is broken, which is worse than a red build:
+
+* `npm run seal-contact-form`. It re-baselines the checksum to whatever the form currently is. In a client repo it does not fix check 4, it blinds it.
+* Editing `components/ContactForm.tsx` or `scripts/contact-form.sha256`.
+* Editing `lib/config-schema.ts`. The endpoint and honeypot constants live there and checks 5, 6 and 20 are measured against them.
+* Editing `lib/content.ts`. Removing `blockJS: false` makes every `{config.*}` in content render as an empty string with a green build.
+* Editing `next.config.mjs`. `output: 'export'` is what produces the `./out` the gate inspects.
+* Editing anything under `.github/`. The workflow does not edit itself.
+* Editing or weakening `scripts/verify.ts`, `scripts/verify-limits.ts`, `scripts/contrast-check.ts`, or `lib/hero-scrim.ts`.
+* Setting `launch.indexable` to `true` on a `site_build` or `site_update` run. Only `go_live` touches it.
+* Editing `app/robots.ts` or the `robots` block in `app/layout.tsx`. Both read the flag; the flag is the control surface, not the code.
+
+If a change you believe is correct requires one of these files, do not make it. Write what you wanted to change and why under item 8 of the report, and let the human decide in the template repo.
+
+Failure. Phase 6 still allows three `npm run verify` attempts. If the gate is still red after the third, stop. Do not try a fourth, do not disable a check, do not edit a check's thresholds, do not delete a content file to dodge one. Write into `BUILD-REPORT.md`: the full final verify table, every failing check number with its detail string, what you tried on each attempt, and what you believe the fix is. Then commit what you have to `build/<businessSlug>` and finish. A red branch with an honest report is a usable result; a green branch with a weakened gate is not.
