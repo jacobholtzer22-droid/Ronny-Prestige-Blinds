@@ -233,8 +233,17 @@ jobs:
           # instead of waiting for an @claude mention.
           prompt: 'Follow AGENT.md in non-interactive (CI) mode. kind=${{ steps.cfg.outputs.kind }}. businessSlug=${{ steps.cfg.outputs.business_slug }}.'
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # The job's own token. Without it the action tries an OIDC exchange
+          # for the Claude GitHub App token, which needs `id-token: write` and
+          # the app installed on every client repo; neither is true.
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # AGENT.md has the agent run npm run build / verify and commit to the
+          # build branch, so it needs Bash. Pushing is the workflow's job (the
+          # push step below); an agent push would race it, so it is denied.
           claude_args: |
             --max-turns 180
+            --allowedTools "Bash,Read,Write,Edit,MultiEdit,Glob,Grep,LS,TodoWrite"
+            --disallowedTools "Bash(git push:*)"
 
       - name: Verify gate
         id: verify
