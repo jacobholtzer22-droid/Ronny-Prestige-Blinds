@@ -1,0 +1,441 @@
+name: AA build
+
+# Fills or updates this client site with Claude Code, runs the verify gate, and
+# opens a PR for review. Vercel previews the PR; a human merges it.
+#
+# Dispatched by the platform ops tool (repository_dispatch, type aa-build) or by
+# hand from the Actions tab (workflow_dispatch).
+#
+# The agent commits to the build branch but never pushes — see AGENT.md,
+# "Non-interactive (CI) mode". This workflow owns the push, the PR and the
+# callback, so that the branch, the PR body and the platform all describe the
+# same commit.
+#
+# The gate runs as its own step with continue-on-error, because a red gate must
+# still produce a branch, a PR and a report. A failed build that reports why is
+# reviewable; a failed build that vanishes is not.
+
+on:
+  repository_dispatch:
+    types: [aa-build]
+  workflow_dispatch:
+    inputs:
+      kind:
+        description: 'site_build (new site from BRIEF.md), site_update (scoped change from INSTRUCTIONS.md), or go_live (flip launch.indexable to true)'
+        type: choice
+        required: true
+        default: site_build
+        options:
+          - site_build
+          - site_update
+          - go_live
+      run_id:
+        description: 'Ops run id, echoed back in the callback'
+        type: string
+        required: true
+      brief:
+        description: 'base64 of the BRIEF.md markdown (site_build)'
+        type: string
+        required: false
+        default: ''
+      instructions:
+        description: 'base64 of the INSTRUCTIONS.md markdown (site_update)'
+        type: string
+        required: false
+        default: ''
+      business_slug:
+        description: 'businessSlug, must match the Business row on the platform'
+        type: string
+        required: true
+      callback_url:
+        description: 'Platform URL to POST the result to'
+        type: string
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  # One build at a time per repo. A second dispatch waits rather than racing the
+  # first one's branch and PR.
+  group: aa-build-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      # ---------------------------------------------------------------------
+      # Inputs arrive under github.event.inputs (workflow_dispatch) or
+      # github.event.client_payload (repository_dispatch). Normalise once here
+      # so no later step has to care which trigger fired.
+      # ---------------------------------------------------------------------
+      - name: Resolve inputs
+        id: cfg
+        env:
+          KIND: ${{ github.event.inputs.kind || github.event.client_payload.kind }}
+          RUN_ID: ${{ github.event.inputs.run_id || github.event.client_payload.run_id }}
+          BRIEF_B64: ${{ github.event.inputs.brief || github.event.client_payload.brief }}
+          INSTRUCTIONS_B64: ${{ github.event.inputs.instructions || github.event.client_payload.instructions }}
+          BUSINESS_SLUG: ${{ github.event.inputs.business_slug || github.event.client_payload.business_slug }}
+          CALLBACK_URL: ${{ github.event.inputs.callback_url || github.event.client_payload.callback_url }}
+        run: |
+          set -euo pipefail
+
+          kind="${KIND:-site_build}"
+          case "$kind" in
+            site_build|site_update|go_live) ;;
+            *) echo "::error::kind must be site_build, site_update or go_live, got '$kind'"; exit 1 ;;
+          esac
+
+          if [ -z "${BUSINESS_SLUG:-}" ]; then
+            echo "::error::business_slug is required. It is the join key for every lead this site sends; a build without it cannot be verified."
+            exit 1
+          fi
+          if ! printf '%s' "$BUSINESS_SLUG" | grep -Eq '^[a-z0-9]+(-[a-z0-9]+)*$'; then
+            echo "::error::business_slug '$BUSINESS_SLUG' is not kebab-case; site.config.ts would fail schema validation."
+            exit 1
+          fi
+          if [ -z "${RUN_ID:-}" ]; then
+            echo "::error::run_id is required so the callback can be matched to an ops run."
+            exit 1
+          fi
+
+          if [ "$kind" = "site_build" ] && [ -z "${BRIEF_B64:-}" ]; then
+            echo "::error::kind=site_build requires a base64 brief."
+            exit 1
+          fi
+          if [ "$kind" = "site_update" ] && [ -z "${INSTRUCTIONS_B64:-}" ]; then
+            echo "::error::kind=site_update requires base64 instructions."
+            exit 1
+          fi
+
+          # run_id goes in a branch name, so keep it to safe characters.
+          short_run_id="$(printf '%s' "$RUN_ID" | tr -cd '[:alnum:]-' | cut -c1-12)"
+          if [ -z "$short_run_id" ]; then
+            echo "::error::run_id '$RUN_ID' has no alphanumeric characters to build a branch name from."
+            exit 1
+          fi
+
+          {
+            echo "kind=$kind"
+            echo "run_id=$RUN_ID"
+            echo "business_slug=$BUSINESS_SLUG"
+            echo "callback_url=${CALLBACK_URL:-}"
+            echo "branch=build/${BUSINESS_SLUG}-${short_run_id}"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "kind=$kind  slug=$BUSINESS_SLUG  branch=build/${BUSINESS_SLUG}-${short_run_id}"
+
+      - name: Preflight secrets
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPS_CALLBACK_SECRET: ${{ secrets.OPS_CALLBACK_SECRET }}
+        run: |
+          set -euo pipefail
+          missing=0
+          if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
+            echo "::error::Repository secret ANTHROPIC_API_KEY is not set. Add it under Settings > Secrets and variables > Actions. Without it Claude Code cannot run and this job can only fail."
+            missing=1
+          fi
+          if [ -z "${OPS_CALLBACK_SECRET:-}" ]; then
+            echo "::error::Repository secret OPS_CALLBACK_SECRET is not set. Add it under Settings > Secrets and variables > Actions. It signs the result callback; without it the platform cannot trust the report and would never record this run."
+            missing=1
+          fi
+          [ "$missing" -eq 0 ] || exit 1
+          echo "Both required secrets are present."
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Full history: the agent commits, and the push below needs a real
+          # branch, not a detached shallow clone.
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        # tsx, cheerio and sharp are devDependencies and the gate needs all
+        # three, so this is a full install. Never --omit=dev here.
+        run: npm ci
+
+      - name: Write the brief
+        env:
+          BRIEF_B64: ${{ github.event.inputs.brief || github.event.client_payload.brief }}
+          INSTRUCTIONS_B64: ${{ github.event.inputs.instructions || github.event.client_payload.instructions }}
+          KIND: ${{ steps.cfg.outputs.kind }}
+        run: |
+          set -euo pipefail
+          case "$KIND" in
+            site_build)
+              printf '%s' "$BRIEF_B64" | base64 -d > BRIEF.md
+              test -s BRIEF.md || { echo "::error::decoded BRIEF.md is empty"; exit 1; }
+              echo "Wrote BRIEF.md ($(wc -c < BRIEF.md) bytes, $(wc -l < BRIEF.md) lines)"
+              ;;
+            site_update)
+              printf '%s' "$INSTRUCTIONS_B64" | base64 -d > INSTRUCTIONS.md
+              test -s INSTRUCTIONS.md || { echo "::error::decoded INSTRUCTIONS.md is empty"; exit 1; }
+              echo "Wrote INSTRUCTIONS.md ($(wc -c < INSTRUCTIONS.md) bytes, $(wc -l < INSTRUCTIONS.md) lines)"
+              ;;
+            go_live)
+              # Written HERE, not taken from the payload, and any supplied
+              # `instructions` is ignored on purpose. go_live is the one run
+              # that may publish a site, so its scope is fixed in this file
+              # rather than in a dispatch field someone could widen.
+              # Two generations of the template are in the field and their
+              # launch flags read in OPPOSITE directions: the current one asks
+              # whether the site may be indexed, the older one asked whether it
+              # is still pre-launch. Naming both, with the value each one needs,
+              # is what keeps a go_live run from confidently setting the wrong
+              # boolean and either leaving a launched site noindexed or
+              # publishing one that was meant to stay hidden.
+              cat > INSTRUCTIONS.md <<'EOF'
+          # Go live
+
+          If `site.config.ts` has `launch.indexable`, set it to `true`.
+          Otherwise if it has `prelaunch`, set it to `false`.
+
+          Change nothing else. Do not touch content, design, images,
+          components, or any other config field. Then run the gate and report.
+
+          The two flags mean opposite things, so take the value from whichever
+          key this repo actually has and do not add the other one. If neither
+          key is present, stop and say so in BUILD-REPORT.md rather than
+          guessing which generation this repo is.
+          EOF
+              echo "Wrote the canonical go_live INSTRUCTIONS.md:"
+              sed 's/^/    /' INSTRUCTIONS.md
+              ;;
+          esac
+
+      - name: Run Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          # A `prompt` puts the action in automation mode: it runs immediately
+          # instead of waiting for an @claude mention.
+          prompt: 'Follow AGENT.md in non-interactive (CI) mode. kind=${{ steps.cfg.outputs.kind }}. businessSlug=${{ steps.cfg.outputs.business_slug }}.'
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: |
+            --max-turns 180
+
+      - name: Verify gate
+        id: verify
+        # The gate decides whether this is mergeable, not whether the job
+        # reports. A red gate still gets a branch, a PR and a report.
+        continue-on-error: true
+        # Output goes to RUNNER_TEMP, never the working tree: these are job
+        # artifacts, and a stray file in the repo would end up in the commit.
+        # The pipeline is the LAST command in this step on purpose — with
+        # pipefail its status is the step's status, which is what sets
+        # steps.verify.outcome. Do not append anything after it.
+        run: |
+          set -o pipefail
+          npm run verify 2>&1 | tee "$RUNNER_TEMP/verify-output.txt"
+
+      - name: Collect gate result
+        id: gate
+        if: always()
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/verify-output.txt"
+          table="$RUNNER_TEMP/verify-table.txt"
+
+          if [ "${{ steps.verify.outcome }}" = "success" ]; then
+            echo "verify_passed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "verify_passed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          # The gate's own summary line is the authoritative list of failures.
+          failing=""
+          if [ -f "$out" ]; then
+            failing="$(grep -oE '^FAILED: .*' "$out" | head -1 | sed 's/^FAILED: //; s/\. Do not deploy\.$//' || true)"
+          fi
+          echo "failing_checks=${failing}" >> "$GITHUB_OUTPUT"
+          echo "Gate: ${{ steps.verify.outcome }}. Failing: ${failing:-none}"
+
+          # The table is the part worth reading; keep it for the PR body.
+          if [ -f "$out" ]; then
+            awk '/^#   check/,0' "$out" > "$table" || true
+            [ -s "$table" ] || tail -40 "$out" > "$table"
+          else
+            echo "npm run verify produced no output; the step did not reach the gate." > "$table"
+          fi
+
+      - name: Commit and push the build branch
+        id: push
+        if: always()
+        env:
+          BRANCH: ${{ steps.cfg.outputs.branch }}
+        run: |
+          set -euo pipefail
+          git config user.name  "aa-build[bot]"
+          git config user.email "aa-build@users.noreply.github.com"
+
+          # The agent was told to commit to build/<businessSlug>. Whatever it
+          # did or did not commit, everything in the tree belongs on this
+          # branch, so move onto it and sweep up the remainder.
+          git checkout -B "$BRANCH"
+
+          # BRIEF.md / INSTRUCTIONS.md are committed on purpose: the PR reviewer
+          # needs to see the input the site was built from. Gate output lives in
+          # RUNNER_TEMP and never reaches the working tree.
+          if [ -n "$(git status --porcelain)" ]; then
+            git add -A
+            git commit \
+              -m "build: ${{ steps.cfg.outputs.kind }} for ${{ steps.cfg.outputs.business_slug }}" \
+              -m "Ops run ${{ steps.cfg.outputs.run_id }}. Verify gate: ${{ steps.verify.outcome }}. See BUILD-REPORT.md."
+            echo "Committed the remaining working-tree changes."
+          else
+            echo "Working tree clean; the agent's own commits are all there is."
+          fi
+
+          if git rev-parse --verify --quiet "origin/main" >/dev/null && \
+             [ "$(git rev-list --count origin/main.."$BRANCH")" = "0" ]; then
+            echo "::warning::No commits on $BRANCH beyond main. Claude Code produced no changes."
+            echo "empty=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "empty=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          git push --force-with-lease -u origin "$BRANCH"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Open the pull request
+        id: pr
+        if: always() && steps.push.outputs.empty == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ steps.push.outputs.branch }}
+          KIND: ${{ steps.cfg.outputs.kind }}
+          SLUG: ${{ steps.cfg.outputs.business_slug }}
+        run: |
+          set -euo pipefail
+
+          {
+            if [ -f BUILD-REPORT.md ]; then
+              cat BUILD-REPORT.md
+            else
+              echo "## No BUILD-REPORT.md"
+              echo
+              echo "AGENT.md Phase 7 requires one. Its absence means the agent did not reach Phase 7 —"
+              echo "check the Claude Code step's log before reading anything below as a finished build."
+            fi
+            echo
+            echo '---'
+            echo
+            echo '## Verify gate'
+            echo
+            echo "Result: **${{ steps.verify.outcome }}**"
+            if [ -n "${{ steps.gate.outputs.failing_checks }}" ]; then
+              echo
+              echo "Failing: ${{ steps.gate.outputs.failing_checks }}"
+            fi
+            echo
+            echo '```'
+            cat "$RUNNER_TEMP/verify-table.txt" 2>/dev/null || echo "(no verify output captured)"
+            echo '```'
+            echo
+            echo "Ops run \`${{ steps.cfg.outputs.run_id }}\` · workflow run [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+          } > "$RUNNER_TEMP/pr-body.md"
+
+          existing="$(gh pr list --head "$BRANCH" --state open --json url --jq '.[0].url // empty')"
+          if [ -n "$existing" ]; then
+            gh pr edit "$existing" --title "$KIND: $SLUG" --body-file "$RUNNER_TEMP/pr-body.md"
+            url="$existing"
+          else
+            url="$(gh pr create --base main --head "$BRANCH" --title "$KIND: $SLUG" --body-file "$RUNNER_TEMP/pr-body.md")"
+          fi
+          echo "pr_url=$url" >> "$GITHUB_OUTPUT"
+          echo "PR: $url"
+
+      - name: Call back to the platform
+        if: always()
+        env:
+          CALLBACK_URL: ${{ steps.cfg.outputs.callback_url }}
+          OPS_CALLBACK_SECRET: ${{ secrets.OPS_CALLBACK_SECRET }}
+          RUN_ID: ${{ steps.cfg.outputs.run_id }}
+          KIND: ${{ steps.cfg.outputs.kind }}
+          BRANCH: ${{ steps.cfg.outputs.branch }}
+          PR_URL: ${{ steps.pr.outputs.pr_url }}
+          VERIFY_PASSED: ${{ steps.gate.outputs.verify_passed }}
+          FAILING_CHECKS: ${{ steps.gate.outputs.failing_checks }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${CALLBACK_URL:-}" ]; then
+            echo "No callback_url supplied; nothing to report back to."
+            exit 0
+          fi
+
+          excerpt=""
+          if [ -f BUILD-REPORT.md ]; then
+            excerpt="$(head -60 BUILD-REPORT.md)"
+          else
+            excerpt="(no BUILD-REPORT.md was produced)"
+          fi
+
+          # jq builds the JSON so every field is escaped properly; the report
+          # excerpt is markdown full of quotes, backticks and newlines.
+          jq -nc \
+            --arg run_id        "$RUN_ID" \
+            --arg kind          "$KIND" \
+            --arg status        "$JOB_STATUS" \
+            --arg branch        "$BRANCH" \
+            --arg pr_url        "${PR_URL:-}" \
+            --arg failing       "${FAILING_CHECKS:-}" \
+            --arg excerpt       "$excerpt" \
+            --argjson verify_passed "${VERIFY_PASSED:-false}" \
+            '{
+               run_id: $run_id,
+               kind: $kind,
+               status: $status,
+               branch: $branch,
+               pr_url: (if $pr_url == "" then null else $pr_url end),
+               verify_passed: $verify_passed,
+               failing_checks: (if $failing == "" then [] else ($failing | split(", ")) end),
+               report_excerpt: $excerpt
+             }' > "$RUNNER_TEMP/callback.json"
+
+          # HMAC over the exact bytes being sent, so the platform can verify the
+          # body it received is the body this job signed.
+          sig="$(openssl dgst -sha256 -hmac "$OPS_CALLBACK_SECRET" -hex < "$RUNNER_TEMP/callback.json" | awk '{print $NF}')"
+
+          code="$(curl -sS -o "$RUNNER_TEMP/callback-response.txt" -w '%{http_code}' \
+            --max-time 30 --retry 3 --retry-connrefused \
+            -X POST "$CALLBACK_URL" \
+            -H 'Content-Type: application/json' \
+            -H "X-AA-Signature: $sig" \
+            --data-binary @"$RUNNER_TEMP/callback.json")"
+
+          echo "Callback POST $CALLBACK_URL -> HTTP $code"
+          head -c 500 "$RUNNER_TEMP/callback-response.txt" || true
+          echo
+          case "$code" in
+            2*) echo "Platform accepted the result." ;;
+            *)  echo "::warning::Callback returned HTTP $code. The branch and PR are still correct; the platform just did not record this run." ;;
+          esac
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### AA build: ${{ steps.cfg.outputs.kind }} / ${{ steps.cfg.outputs.business_slug }}"
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Gate | ${{ steps.verify.outcome }} |"
+            echo "| Failing checks | ${{ steps.gate.outputs.failing_checks || 'none' }} |"
+            echo "| Branch | \`${{ steps.cfg.outputs.branch }}\` |"
+            echo "| PR | ${{ steps.pr.outputs.pr_url || 'not opened' }} |"
+            echo "| Ops run | \`${{ steps.cfg.outputs.run_id }}\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
