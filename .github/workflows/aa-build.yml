@@ -318,20 +318,23 @@ jobs:
 
       # ---------------------------------------------------------------------
       # Stock photos, only when Jacob said "with stock" and no client photo was
-      # saved above. Trade-matched photos from the Pexels API (its license
-      # allows commercial use without attribution), searched from the services
-      # in BRIEF.md, saved to public/images/originals/ as stock-*. Photos whose
-      # description mentions a person, a face, a logo, a truck or a van are
-      # skipped; the agent still views each one before placing it. STOCK.json
-      # lists every file so the agent marks them in CLIENT-TODO.md for real
-      # photos to replace. Without PEXELS_API_KEY nothing is fetched and the
-      # site builds without images, as before.
+      # saved above. Trade-matched photos searched from the services in
+      # BRIEF.md, from Pexels when PEXELS_API_KEY is set, else from Pixabay
+      # when PIXABAY_API_KEY is (both licenses allow commercial use without
+      # attribution; Pixabay's asks that files be downloaded and hosted, never
+      # hotlinked, which this does). Saved to public/images/originals/ as
+      # stock-*. Photos whose description or tags mention a person, a face, a
+      # logo, a truck or a van are skipped; the agent still views each one
+      # before placing it. STOCK.json lists every file so the agent marks them
+      # in CLIENT-TODO.md for real photos to replace. With neither key nothing
+      # is fetched and the site builds without images, as before.
       # ---------------------------------------------------------------------
       - name: Fetch stock photos
         if: steps.cfg.outputs.kind == 'site_build'
         env:
           WITH_STOCK: ${{ github.event.inputs.with_stock || github.event.client_payload.with_stock }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
         run: |
           set -euo pipefail
           if [ "${WITH_STOCK:-}" != "true" ]; then
@@ -342,14 +345,37 @@ jobs:
             echo "Client photos are on file; no stock."
             exit 0
           fi
-          if [ -z "${PEXELS_API_KEY:-}" ]; then
-            echo '{"saved":[],"skipped":"PEXELS_API_KEY is not set on this repo, so no stock photos were fetched."}' > STOCK.json
-            echo "::warning::with_stock requested but PEXELS_API_KEY is not set; building without images."
+          if [ -z "${PEXELS_API_KEY:-}" ] && [ -z "${PIXABAY_API_KEY:-}" ]; then
+            echo '{"saved":[],"skipped":"Neither PEXELS_API_KEY nor PIXABAY_API_KEY is set on this repo, so no stock photos were fetched."}' > STOCK.json
+            echo "::warning::with_stock requested but no stock API key is set; building without images."
             exit 0
           fi
           node <<'NODE'
           const fs = require('node:fs')
           const path = require('node:path')
+          // One search interface over both providers: { id, text, page, download }.
+          const providers = {
+            Pexels: {
+              license: 'https://www.pexels.com/license/',
+              async search(q) {
+                const res = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(q)}&per_page=15&orientation=landscape`, { headers: { Authorization: process.env.PEXELS_API_KEY } })
+                if (!res.ok) throw new Error(`Pexels HTTP ${res.status}`)
+                const { photos = [] } = await res.json()
+                return photos.map((p) => ({ id: p.id, text: p.alt || '', page: p.url, download: p.src.large2x }))
+              },
+            },
+            Pixabay: {
+              license: 'https://pixabay.com/service/license-summary/',
+              async search(q) {
+                const res = await fetch(`https://pixabay.com/api/?key=${encodeURIComponent(process.env.PIXABAY_API_KEY)}&q=${encodeURIComponent(q.slice(0, 100))}&image_type=photo&orientation=horizontal&safesearch=true&per_page=20`)
+                if (!res.ok) throw new Error(`Pixabay HTTP ${res.status}`)
+                const { hits = [] } = await res.json()
+                return hits.map((h) => ({ id: h.id, text: h.tags || '', page: h.pageURL, download: h.largeImageURL }))
+              },
+            },
+          }
+          const name = process.env.PEXELS_API_KEY ? 'Pexels' : 'Pixabay'
+          const provider = providers[name]
           const brief = fs.readFileSync('BRIEF.md', 'utf8')
           // Service names from the brief's "- Name:" lines; the trade as a fallback query.
           const names = [...brief.matchAll(/^\s*-\s*Name:\s*(.+)$/gim)].map((m) => m[1].trim()).filter((n) => n && !/^unknown$/i.test(n))
@@ -364,27 +390,26 @@ jobs:
           const seen = new Set()
           ;(async () => {
             for (const [qi, q] of queries.entries()) {
-              const res = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(q)}&per_page=15&orientation=landscape`, { headers: { Authorization: process.env.PEXELS_API_KEY } })
-              if (!res.ok) { skipped.push({ query: q, why: `Pexels HTTP ${res.status}` }); continue }
-              const { photos = [] } = await res.json()
+              let photos
+              try { photos = await provider.search(q) } catch (e) { skipped.push({ query: q, why: String(e.message || e) }); continue }
               let taken = 0
               for (const p of photos) {
                 if (taken >= (qi === 0 ? 3 : 2)) break
                 if (seen.has(p.id)) continue
-                if (banned.test(p.alt || '')) { skipped.push({ query: q, id: p.id, why: `description mentions a person, logo or vehicle: ${p.alt}` }); continue }
+                if (banned.test(p.text)) { skipped.push({ query: q, id: p.id, why: `description mentions a person, logo or vehicle: ${p.text}` }); continue }
                 seen.add(p.id)
                 const file = path.join(dir, `stock-${kebab(q)}-${taken + 1}.jpg`)
-                const img = await fetch(p.src.large2x)
+                const img = await fetch(p.download)
                 if (!img.ok) { skipped.push({ query: q, id: p.id, why: `download HTTP ${img.status}` }); continue }
                 fs.writeFileSync(file, Buffer.from(await img.arrayBuffer()))
-                saved.push({ file, service: names.length ? q : null, query: q, pexelsId: p.id, pexelsUrl: p.url, alt: p.alt || null, heroCandidate: qi === 0 && taken === 0 })
+                saved.push({ file, service: names.length ? q : null, query: q, provider: name, sourceId: p.id, sourceUrl: p.page, description: p.text || null, heroCandidate: qi === 0 && taken === 0 })
                 taken++
               }
             }
-            fs.writeFileSync('STOCK.json', JSON.stringify({ source: 'Pexels', license: 'https://www.pexels.com/license/', saved, skipped }, null, 2) + '\n')
+            fs.writeFileSync('STOCK.json', JSON.stringify({ source: name, license: provider.license, saved, skipped }, null, 2) + '\n')
             if (saved.length) for (const f of fs.readdirSync(dir)) if (f.startsWith('sample-')) fs.rmSync(path.join(dir, f))
-            console.log(`Stock: saved ${saved.length} from ${queries.length} queries (${queries.join(', ')}), skipped ${skipped.length}.`)
-          })().catch((e) => { console.error(e); fs.writeFileSync('STOCK.json', JSON.stringify({ saved, skipped: [...skipped, { why: String(e) }] }, null, 2) + '\n') })
+            console.log(`Stock (${name}): saved ${saved.length} from ${queries.length} queries (${queries.join(', ')}), skipped ${skipped.length}.`)
+          })().catch((e) => { console.error(e); fs.writeFileSync('STOCK.json', JSON.stringify({ source: name, saved, skipped: [...skipped, { why: String(e) }] }, null, 2) + '\n') })
           NODE
 
       - name: Run Claude Code
