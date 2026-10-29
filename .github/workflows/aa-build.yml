@@ -413,6 +413,7 @@ jobs:
           NODE
 
       - name: Run Claude Code
+        id: claude
         uses: anthropics/claude-code-action@v1
         with:
           # A `prompt` puts the action in automation mode: it runs immediately
@@ -423,6 +424,10 @@ jobs:
           # for the Claude GitHub App token, which needs `id-token: write` and
           # the app installed on every client repo; neither is true.
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          # Print the agent's turns in the job log. Without it a failed run
+          # leaves only "is_error: true". The client repos are private, so the
+          # log is not public.
+          show_full_output: true
           # AGENT.md has the agent run npm run build / verify and commit to the
           # build branch, so it needs Bash. Pushing is the workflow's job (the
           # push step below); an agent push would race it, so it is denied.
@@ -582,6 +587,21 @@ jobs:
           echo "pr_url=$url" >> "$GITHUB_OUTPUT"
           echo "PR: $url"
 
+      - name: Upload the agent's output
+        # Kept even when an earlier step failed: the full transcript, the
+        # report and the stock list are what explain a bad run. Files that
+        # were never written are skipped.
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aa-build-${{ steps.cfg.outputs.run_id || github.run_id }}
+          path: |
+            /home/runner/work/_temp/claude-execution-output.json
+            BUILD-REPORT.md
+            STOCK.json
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Call back to the platform
         if: always()
         env:
@@ -595,6 +615,8 @@ jobs:
           VERIFY_PASSED: ${{ steps.gate.outputs.verify_passed }}
           FAILING_CHECKS: ${{ steps.gate.outputs.failing_checks }}
           JOB_STATUS: ${{ job.status }}
+          CLAUDE_OUTCOME: ${{ steps.claude.outcome }}
+          CLAUDE_OUTPUT: ${{ steps.claude.outputs.execution_file }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set -euo pipefail
@@ -611,6 +633,25 @@ jobs:
             excerpt="(no BUILD-REPORT.md was produced)"
           fi
 
+          # On a failed run, the last 20 lines of the agent's final result, so
+          # the chief can say why it failed without opening the Actions log.
+          # -s and flatten read the file whether it is one JSON array or one
+          # message per line. A run that stopped without result text (max
+          # turns, say) reports its subtype instead.
+          failure_tail=""
+          if [ "$JOB_STATUS" != "success" ] || [ "${CLAUDE_OUTCOME:-}" = "failure" ]; then
+            out="${CLAUDE_OUTPUT:-$RUNNER_TEMP/claude-execution-output.json}"
+            [ -f "$out" ] || out="$RUNNER_TEMP/claude-execution-output.json"
+            if [ -f "$out" ]; then
+              failure_tail="$(jq -rs '
+                [flatten[] | select(type == "object" and .type == "result")] | last
+                | if . == null then empty
+                  elif ((.result // "") | length) > 0 then .result
+                  else "Claude stopped without a result (\(.subtype // "unknown"))" end
+              ' "$out" 2>/dev/null | tail -20 | head -c 4000 || true)"
+            fi
+          fi
+
           # jq builds the JSON so every field is escaped properly; the report
           # excerpt is markdown full of quotes, backticks and newlines.
           jq -nc \
@@ -622,6 +663,7 @@ jobs:
             --arg run_url       "$RUN_URL" \
             --arg failing       "${FAILING_CHECKS:-}" \
             --arg excerpt       "$excerpt" \
+            --arg failure_tail  "$failure_tail" \
             --argjson verify_passed "${VERIFY_PASSED:-false}" \
             '{
                run_id: $run_id,
@@ -632,7 +674,8 @@ jobs:
                run_url: $run_url,
                verify_passed: $verify_passed,
                failing_checks: (if $failing == "" then [] else ($failing | split(", ")) end),
-               report_excerpt: $excerpt
+               report_excerpt: $excerpt,
+               failure_tail: (if $failure_tail == "" then null else $failure_tail end)
              }' > "$RUNNER_TEMP/callback.json"
 
           # HMAC over the exact bytes being sent, so the platform can verify the
