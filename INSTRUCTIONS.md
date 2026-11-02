@@ -1,6 +1,10 @@
-Change the site's domain to the client's real domain, https://www.prestigeblindsfl.com.
+Tracking install. Write this tracking block into site.config.ts as the `tracking` key, exactly as given, and change nothing else (AGENT.md, CI mode, Tracking installs):
 
-1. In site.config.ts set domain to 'https://www.prestigeblindsfl.com'.
-2. Replace any other hardcoded reference to the website address prestigewoodblinds.com (in code, copy, metadata, schema, llms.txt or docs that describe the live site) with prestigeblindsfl.com. Do NOT change email addresses: if an address like name@prestigewoodblinds.com appears, leave it exactly as it is and list it in BUILD-REPORT.md.
-3. Do not change prelaunch, launch.indexable, robots behavior, design, or any other content. This is a domain-only change.
-4. In BUILD-REPORT.md list every file and line you changed.
+```ts
+tracking: {
+  googleAdsId: 'AW-18523532236',
+  conversions: { form: 'AW-18523532236/JqfSCKf5jawdEMzX2oBF' },
+},
+```
+
+Then run the gate: check 22 must pass.
