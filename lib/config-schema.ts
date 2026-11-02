@@ -374,6 +374,47 @@ export const siteConfigSchema = z
     prelaunch: z.boolean().default(false),
 
     /**
+     * Google tag. OPTIONAL: omit the block and nothing renders, so a site
+     * without it is byte-identical to before it existed.
+     *
+     * With googleAdsId set, every page loads gtag.js and configs that id (and
+     * ga4 when set). conversions.form fires when the contact form shows its
+     * thank-you; conversions.call fires on a click of any tel: link. Each
+     * value is the whole "send_to" string Google Ads gives for the conversion
+     * action: the same AW- id, a slash, then the label. A conversion whose
+     * value is absent is simply not fired, which is how a site goes live with
+     * the tag and the form conversion while Google has not issued the call
+     * label yet. Rendered by components/GoogleTag.tsx.
+     */
+    tracking: z
+      .object({
+        googleAdsId: z.string().regex(/^AW-\d{6,12}$/, 'must look like AW-1234567890').optional(),
+        conversions: z
+          .object({
+            form: z.string().regex(/^AW-\d{6,12}\/[\w-]+$/, 'must look like AW-1234567890/AbCdEfGh').optional(),
+            call: z.string().regex(/^AW-\d{6,12}\/[\w-]+$/, 'must look like AW-1234567890/AbCdEfGh').optional(),
+          })
+          .strict()
+          .default({}),
+        ga4: z.string().regex(/^G-[A-Z0-9]{4,14}$/, 'must look like G-ABC123DEF4').optional(),
+      })
+      .strict()
+      .superRefine((t, ctx) => {
+        // A label that belongs to a different Ads account silently records
+        // nothing, so the id prefix is checked rather than trusted.
+        for (const key of ['form', 'call'] as const) {
+          const label = t.conversions[key]
+          if (!label) continue
+          if (!t.googleAdsId) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['conversions', key], message: 'needs tracking.googleAdsId' })
+          } else if (!label.startsWith(`${t.googleAdsId}/`)) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['conversions', key], message: `must start with ${t.googleAdsId}/` })
+          }
+        }
+      })
+      .optional(),
+
+    /**
      * One standing promotion, rendered by components/PromoBand.tsx on the
      * homepage, every service page, and the contact page. null renders nothing.
      * The only place a numeral offer figure is allowed to live; never in MDX.

@@ -1370,6 +1370,15 @@ const siteConfig = {
   // Flip to false at launch, then redeploy.
   prelaunch: false,
 
+  // Google tag. The call conversion label is deliberately absent: Google Ads
+  // has not issued one yet, and an invented label records nothing.
+  tracking: {
+    googleAdsId: 'AW-18523532236',
+    conversions: {
+      form: 'AW-18523532236/JqfSCKf5jawdEMzX2oBF',
+    },
+  },
+
   domain: 'https://www.prestigeblindsfl.com',
 } satisfies SiteConfigInput
 
